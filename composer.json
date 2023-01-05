@@ -1,0 +1,20 @@
+{
+    "name": "dipesh/nepali-date",
+    "description": "Nepali Date",
+    "type": "library",
+    "keywords": ["date", "nepali", "nepali date", "date converter", "nepali date converter"],
+    "autoload": {
+        "psr-4": {
+            "Dipesh\\NepaliDate\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "dipesh pokhrel",
+            "email": "dipeshpokhrel404@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    }
+}
