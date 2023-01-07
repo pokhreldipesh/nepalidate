@@ -9,20 +9,32 @@ Nepali date is php package written for convert nepali date to english and englis
 
 This is the powerfull nepali date package based on searching algorithm till date.
 
-## How to use
+## Installation
+
+```
+composer require dipesh/nepali-date
+```
 
 ### Initialize nepali date
 
 ```php
 $date = new NepaliDate('1994/01/21');
+
+//or
+$date = new NepaliDate();
+
 ```
 
 ### Date conversion
 
 ```php
 $date->toNepali(); // output 2050/10/8
+//or
+$date->toNepali('1994/01/21');
 
 $date->toEnglish(); // 1994/01/21
+//or
+$date->toEnglish('2050/10/8');
 ```
 
 ### Other functions for nepali date
