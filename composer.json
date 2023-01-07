@@ -8,6 +8,11 @@
             "Dipesh\\NepaliDate\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "dipesh pokhrel",
@@ -15,6 +20,7 @@
         }
     ],
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "phpunit/phpunit": "^9.5"
     }
 }

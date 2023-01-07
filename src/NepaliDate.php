@@ -38,6 +38,13 @@ class NepaliDate extends NepaliDateConverter
     protected $defaultLang = 'en';
 
     /**
+     * Translator.for locale.
+     *
+     * @var mixed
+     */
+    protected array $translator;
+
+    /**
      * Set current date type.
      *
      * @var mixed
@@ -58,19 +65,23 @@ class NepaliDate extends NepaliDateConverter
      */
     public function __construct($date = null)
     {
-        preg_match_all("/\d*/m", $date, $matches);
-
-        $this->fromDate = count(array_filter($matches[0])) ? implode('/', array_filter($matches[0])) : date('Y/m/d');
+        $this->translator = (new Translator())($this->defaultLang);
+        if ($date) {
+            $this->setDate($date);
+        }
     }
 
     /**
-     * Set default language.
+     * Set date for further operation.
+     *
+     * @param mixed $date
+     *
+     * @return void
      */
-    public function lang($lang)
+    private function setDate($date)
     {
-        $this->defaultLang = $lang;
-
-        return $this;
+        preg_match_all("/\d*/m", $date, $matches);
+        $this->fromDate = count(array_filter($matches[0])) ? implode('/', array_filter($matches[0])) : date('Y/m/d');
     }
 
     /**
@@ -100,11 +111,124 @@ class NepaliDate extends NepaliDateConverter
      *
      * @return NepaliDate
      */
-    public function toNepali()
+    public function toNepali($date = null)
     {
+        if ($date) {
+            $this->setDate($date);
+        }
+
+        $this->currentDateType = 'np';
+
         $this->setCurrentDate(...$this->convert($this->fromDate));
 
         return $this;
+    }
+
+    /**
+     * Convert nepali date to to english date.
+     *
+     * @param mixed $format
+     *
+     * @return string
+     */
+    public function toEnglish($date = null, $format = 'Y/m/d')
+    {
+        if ($date) {
+            $this->setDate($date);
+        }
+
+        $this->currentDateType = 'en';
+        $orgDate = $this->fromDate;
+
+        // get current nepali date
+        $this->fromDate = date('Y/m/d');
+        $this->toNepali();
+
+        $diffDays = $this->diff($orgDate);
+
+        return date_create()->sub(date_interval_create_from_date_string("$diffDays days"))->format($format);
+    }
+
+    /**
+     * Get week days.
+     *
+     * @param mixed $format
+     * @param mixed $lang
+     *
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    public function weekDay($format = 'w', $lang = 'np')
+    {
+        $supportedDayFormat = ['w', 'D', 'l'];
+
+        if (!in_array($format, $supportedDayFormat)) {
+            throw new \Exception('Provided day format is not supported. please provide  d,D,l format');
+        }
+
+        if (in_array($format, ['D', 'l'])) {
+            return $this->translator['weeks'][$this->currentDate['w'] - 1][$format];
+        }
+
+        return $this->currentDate[$format];
+    }
+
+    /**
+     * Get day of current month.
+     *
+     * @param mixed $format
+     *
+     * @return int|mixed
+     *
+     * @throws \Exception
+     */
+    public function day($format = 'd')
+    {
+        $supportedDayFormat = ['d'];
+
+        if (!in_array($format, $supportedDayFormat)) {
+            throw new \Exception('Provided day format is not supported. please provide  d');
+        }
+
+        return $this->currentDate[$format];
+    }
+
+    /**
+     * Get month of current year.
+     *
+     * @param mixed $format
+     * @param mixed $lang
+     *
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    public function month($format = 'm', $lang = 'np')
+    {
+        $supportedMonthFormat = ['m', 'M', 'F'];
+
+        if (!in_array($format, $supportedMonthFormat)) {
+            throw new \Exception('Provided month format is not supported. please provide  m,M,F format');
+        }
+
+        if (in_array($format, ['M', 'F'])) {
+            return $this->translator['months'][$this->currentDate['m'] - 1];
+        }
+
+        return $this->currentDate[$format];
+    }
+
+    /**
+     * Get year of current year.
+     *
+     * @param mixed $format
+     *
+     * @return int|mixed
+     */
+    public function year($format = 'Y')
+    {
+        return $this->currentDate[$format];
     }
 
     /**
@@ -186,6 +310,34 @@ class NepaliDate extends NepaliDateConverter
     }
 
     /**
+     * Sub years from current date.
+     *
+     * @param mixed $years
+     *
+     * @return void
+     */
+    public function subYears($years)
+    {
+        $days = array_sum(array_merge(...array_slice($this->bs, $this->currentDate['Y'] - 2000 - $years, $years)));
+
+        $this->subDays($days);
+    }
+
+    /**
+     * Diff date from current date.
+     *
+     * @param mixed $date
+     *
+     * @return float
+     */
+    public function diff($date)
+    {
+        preg_match_all("/\d*/m", $date, $matches);
+
+        return $this->getDiffBetweenDates(implode('/', array_filter($matches[0])), $this->date);
+    }
+
+    /**
      * Get difference between two nepali date in days.
      *
      * @param string $date1 fromat YYYY/mm/dd
@@ -216,138 +368,6 @@ class NepaliDate extends NepaliDateConverter
     }
 
     /**
-     * Sub years from current date.
-     *
-     * @param mixed $years
-     *
-     * @return void
-     */
-    public function subYears($years)
-    {
-        $days = array_sum(array_merge(...array_slice($this->bs, $this->currentDate['Y'] - 2000 - $years, $years)));
-
-        $this->subDays($days);
-    }
-
-    /**
-     * Diff date from current date.
-     *
-     * @param mixed $date
-     *
-     * @return float
-     */
-    private function diff($date)
-    {
-        return $this->getDiffBetweenDates($date, $this->date);
-    }
-
-    /**
-     * Convert nepali date to to english date.
-     *
-     * @param mixed $format
-     *
-     * @return string
-     */
-    public function toEnglish($format = 'Y/m/d')
-    {
-        $orgDate = $this->fromDate;
-
-        // get current nepali date
-        $this->fromDate = date('Y/m/d');
-        $this->toNepali();
-
-        $diffDays = $this->diff($orgDate);
-
-        return date_create()->sub(date_interval_create_from_date_string("$diffDays days"))->format($format);
-    }
-
-    /**
-     * Get week days.
-     *
-     * @param mixed $format
-     * @param mixed $lang
-     *
-     * @return mixed
-     *
-     * @throws \Exception
-     */
-    public function weekDay($format = 'w', $lang = 'np')
-    {
-        $supportedDayFormat = ['w', 'D', 'l'];
-
-        if (!in_array($format, $supportedDayFormat)) {
-            throw new \Exception('Provided day format is not supported. please provide  d,D,l format');
-        }
-
-        if (in_array($format, ['D', 'l'])) {
-            $weeks = include __DIR__."/lang/{$this->defaultLang}/weeks.php";
-
-            return $weeks[$this->currentDate['w'] - 1][$format];
-        }
-
-        return $this->currentDate[$format];
-    }
-
-    /**
-     * Get day of current month.
-     *
-     * @param mixed $format
-     *
-     * @return int|mixed
-     *
-     * @throws \Exception
-     */
-    public function day($format = 'd')
-    {
-        $supportedDayFormat = ['d'];
-
-        if (!in_array($format, $supportedDayFormat)) {
-            throw new \Exception('Provided day format is not supported. please provide  d');
-        }
-
-        return $this->currentDate[$format];
-    }
-
-    /**
-     * Get month of current year.
-     *
-     * @param mixed $format
-     * @param mixed $lang
-     *
-     * @return mixed
-     *
-     * @throws \Exception
-     */
-    public function month($format = 'm', $lang = 'np')
-    {
-        $supportedMonthFormat = ['m', 'M', 'F'];
-
-        if (!in_array($format, $supportedMonthFormat)) {
-            throw new \Exception('Provided month format is not supported. please provide  m,M,F format');
-        }
-
-        if (in_array($format, ['M', 'F'])) {
-            $months = include __DIR__."/lang/{$this->defaultLang}/months.php";
-
-            return $months[$this->currentDate['m'] - 1];
-        }
-
-        return $this->currentDate[$format];
-    }
-
-    /**
-     * Get year of current year.
-     *
-     * @param mixed $format
-     *
-     * @return int|mixed
-     */
-    public function year($format = 'Y')
-    {
-        return $this->currentDate[$format];
-    }
-
-    /**
      * Format nepali date.
      * Y = 4 degit year
      * m = A numeric representation of a month
@@ -375,7 +395,7 @@ class NepaliDate extends NepaliDateConverter
                     } elseif (in_array($format, ['M', 'F'])) {
                         return $this->month($format);
                     } elseif ($format == 'g') {
-                        return include __DIR__."/lang/{$this->defaultLang}/gate.php";
+                        return $this->translator['gate'];
                     }
                 }
 
@@ -393,7 +413,7 @@ class NepaliDate extends NepaliDateConverter
         preg_match_all('/\w*/m', $format, $matches);
 
         if (!(count(array_filter($matches[0])) && (count(array_intersect(array_filter($matches[0]), $this->supportedFormats)) == count(array_filter($matches[0]))))) {
-            throw new \Exception('Invalid date formats');
+            throw new \Exception('Invalid date format');
         }
     }
 
@@ -406,11 +426,24 @@ class NepaliDate extends NepaliDateConverter
      */
     private function convertNumberToNepali($number)
     {
-        $digits = include __DIR__."/lang/{$this->defaultLang}/digits.php";
-
-        return preg_replace_callback("/\d/m", function ($matches) use ($digits) {
-            return $digits[$matches[0]];
+        return preg_replace_callback("/\d/m", function ($matches) {
+            return $this->translator['digits'][$matches[0]];
         }, $number);
+    }
+
+    /**
+     * Set default language.
+     */
+    public function lang($lang)
+    {
+        if (is_callable($lang)) {
+            $this->translator = $lang($this->translator);
+        } else {
+            $this->translator = (new Translator())($lang);
+            $this->defaultLang = $lang;
+        }
+
+        return $this;
     }
 
     /**
