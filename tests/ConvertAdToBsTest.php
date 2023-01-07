@@ -14,14 +14,14 @@ class ConvertAdToBsTest extends TestCase
         $this->date = new NepaliDate();
     }
 
-    public function testConvertAdToBs()
+    public function testConvertDate()
     {
         $this->date->toNepali(date('Y/m/d'));
 
         $this->assertIsString($this->date->__toString());
     }
 
-    public function testConvertAdToBsFor4Years()
+    public function testConvertDateFor4Years()
     {
         $totalDaysToTest = 365 * 4;
 
@@ -37,21 +37,36 @@ class ConvertAdToBsTest extends TestCase
         $this->assertIsArray($convertedDate);
     }
 
-    public function testBsDays()
+    public function testPerformTruthValidation()
+    {
+        $dates = [
+            '1944/1/1' => '2000/9/17',
+            '1944/10/7' => '2001/6/22',
+            '1994/1/21' => '2050/10/8',
+            '2001/7/27' => '2058/4/12',
+            '2023/1/7' => '2079/9/23',
+        ];
+
+        foreach ($dates as $ad => $bs) {
+            $this->assertEquals($bs, $this->date->toNepali($ad)->format('Y/m/d'));
+        }
+    }
+
+    public function testDays()
     {
         $this->date->toNepali(date('Y/m/d'));
 
         $this->assertIsInt($this->date->day());
     }
 
-    public function testBsMonth()
+    public function testMonth()
     {
         $this->date->toNepali(date('Y/m/d'));
 
         $this->assertIsInt($this->date->month());
     }
 
-    public function testBsYear()
+    public function testYear()
     {
         $this->date->toNepali(date('Y/m/d'));
 

@@ -133,9 +133,11 @@ class NepaliDateConverter
 
         list($yearIndex, $year, $month, $day, $weekDay) = $this->calculateDateUntillYearStart($diff);
 
-        $remainingDays = $this->getRemainingDaysFromYearStart($diff, $yearIndex);
+        if ($yearIndex > 1) {
+            $diff = $this->getRemainingDaysFromYearStart($diff, $yearIndex);
+        }
 
-        return $this->calculateRemainingDateFromDays($remainingDays, $year, $month, $day, $weekDay);
+        return $this->calculateRemainingDateFromDays($diff, $year, $month, $day, $weekDay);
     }
 
     /**
@@ -179,14 +181,14 @@ class NepaliDateConverter
      */
     private function calculateDateUntillYearStart(int $diff)
     {
-        $yearIndex = (int) ($diff / 365);
+        $yearIndex = $diff <= 366 ? 0 : (int) ($diff / 365);
 
         return [
-            $yearIndex,
-            $yearIndex + 2000,
-            1,
-            0,
-            $diff % 7 == 0 ? 7 : $diff % 7,
+            $yearIndex, // index
+            $yearIndex + 2000, // year
+            $yearIndex == 0 ? 9 : 1, // month
+            $yearIndex == 0 ? 17 : 0, // day
+            $diff % 7 == 0 ? 7 : $diff % 7, // week day
         ];
     }
 

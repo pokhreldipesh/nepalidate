@@ -1,13 +1,11 @@
 # Nepali Date
 
-Nepali date is php package written for convert nepali date to english and english to nepali. This package supports nepali date formatting nicely according to your needs. Following are the key features of this package:
+Nepali date is php package for working with nepali date. This package supports nepali date formatting nicely according to your needs. Following are the key features of this package:
 
 - Convert english date (AD) to nepali(BS).
 - Convert nepali(BS) to english date (AD).
 - Supports various nepali date formatting.
 - Extensible
-
-This is the powerfull nepali date package based on searching algorithm till date.
 
 ## Installation
 
