@@ -73,7 +73,7 @@ $date->toNepali()->format('Y F d g l'); // 2050 Magh 8 Gate Sukrabar
 
 ### Local languages
 
-Currently nepali and english language are supported. You can use your own language by using callback function.
+Currently nepali and english language are available but this is not limited, you can use your own language by using callback function.
 
 ```php
 $date->toNepali()->lang('np')->format('Y-m-d'); // २०५०-१०-८
@@ -84,6 +84,12 @@ $date->toNepali()->lang('np')->format('Y F d g l'); // २०५० माघ �
 $date->toNepali()->lang(function($lang) {
   return $lang; // Provide your own language array
 })->format('Y F d g l');
+```
+
+### Push data to lookup table
+
+```php
+$newDateInstance = (new NepaliDate())->pushLookUpTable(['2091' => [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30]]);
 ```
 
 ## License

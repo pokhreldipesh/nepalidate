@@ -2,8 +2,15 @@
 
 namespace Dipesh\NepaliDate;
 
-class NepaliDate extends NepaliDateConverter
+class NepaliDate
 {
+    /**
+     * Converter instance.
+     *
+     * @var mixed
+     */
+    protected $converter;
+
     /**
      * Current converted date.
      *
@@ -69,6 +76,8 @@ class NepaliDate extends NepaliDateConverter
         if ($date) {
             $this->setDate($date);
         }
+
+        $this->converter = new NepaliDateConverter();
     }
 
     /**
@@ -82,6 +91,30 @@ class NepaliDate extends NepaliDateConverter
     {
         preg_match_all("/\d*/m", $date, $matches);
         $this->fromDate = count(array_filter($matches[0])) ? implode('/', array_filter($matches[0])) : date('Y/m/d');
+    }
+
+    /**
+     * Push data to lookup table.
+     *
+     * ['2091' => [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30]].
+     *
+     * @param mixed $months
+     */
+    public function pushLookUpTable(array $data)
+    {
+        $this->converter->bs = $this->converter->bs + $data;
+
+        return $this;
+    }
+
+    /**
+     * Get lookup table for reference.
+     *
+     * @return array
+     */
+    public function getLookUpTable()
+    {
+        return $this->converter->bs;
     }
 
     /**
@@ -117,9 +150,11 @@ class NepaliDate extends NepaliDateConverter
             $this->setDate($date);
         }
 
+        $this->dateValidationBeforeConvert();
+
         $this->currentDateType = 'np';
 
-        $this->setCurrentDate(...$this->convert($this->fromDate));
+        $this->setCurrentDate(...$this->converter->convert($this->fromDate));
 
         return $this;
     }
@@ -136,6 +171,8 @@ class NepaliDate extends NepaliDateConverter
         if ($date) {
             $this->setDate($date);
         }
+
+        $this->dateValidationBeforeConvert();
 
         $this->currentDateType = 'en';
         $orgDate = $this->fromDate;
@@ -269,7 +306,7 @@ class NepaliDate extends NepaliDateConverter
      */
     public function subMonths($months)
     {
-        $currentYear = $this->bs[$this->currentDate['Y']];
+        $currentYear = $this->converter->bs[$this->currentDate['Y']];
 
         $monthIndex = $this->currentDate['m'] - $months - 1;
 
@@ -278,7 +315,7 @@ class NepaliDate extends NepaliDateConverter
 
             $fromIndex = 12 - abs($monthIndex % 12);
 
-            $currentYear = array_slice(array_merge(...array_slice($this->bs, ($this->currentDate['Y'] - 2000) - $y + 1, $y)), $fromIndex);
+            $currentYear = array_slice(array_merge(...array_slice($this->converter->bs, ($this->currentDate['Y'] - 2000) - $y + 1, $y)), $fromIndex);
 
             $subDays = array_sum(array_slice($currentYear, 0, $months));
         } else {
@@ -299,10 +336,10 @@ class NepaliDate extends NepaliDateConverter
      */
     public function addMonths($months)
     {
-        $currentYear = $this->bs[$this->currentDate['Y']];
+        $currentYear = $this->converter->bs[$this->currentDate['Y']];
 
         if (($this->currentDate['m'] + $months) / 12 > 1) {
-            $currentYear = array_merge(...array_slice($this->bs, $this->currentDate['Y'] - 2000, ceil(($this->currentDate['m'] + $months) / 12)));
+            $currentYear = array_merge(...array_slice($this->converter->bs, $this->currentDate['Y'] - 2000, ceil(($this->currentDate['m'] + $months) / 12)));
         }
         $days = array_sum(array_slice($currentYear, $this->currentDate['m'], $months));
 
@@ -318,7 +355,7 @@ class NepaliDate extends NepaliDateConverter
      */
     public function subYears($years)
     {
-        $days = array_sum(array_merge(...array_slice($this->bs, $this->currentDate['Y'] - 2000 - $years, $years)));
+        $days = array_sum(array_merge(...array_slice($this->converter->bs, $this->currentDate['Y'] - 2000 - $years, $years)));
 
         $this->subDays($days);
     }
@@ -359,7 +396,7 @@ class NepaliDate extends NepaliDateConverter
         if ($diffYear == 0) {
             $y = [];
         } else {
-            $y = array_slice($this->bs, $date2[0] - 2000 - abs($diffYear), abs($diffYear) + 1);
+            $y = array_slice($this->converter->bs, $date2[0] - 2000 - abs($diffYear), abs($diffYear) + 1);
         }
 
         $totalSum = (array_sum(array_merge(...array_slice($y, 1, -1))) + (array_sum(array_slice(array_pop($y), 0, $date2[1] - 1)) + $date2[2]) + (array_sum(array_slice($y[0], $date1[1] - 1)) - $date1[2]));
@@ -406,6 +443,20 @@ class NepaliDate extends NepaliDateConverter
                 return $this->currentDate[$format];
             }
         }, $format);
+    }
+
+    /**
+     * Date validation before conversion.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function dateValidationBeforeConvert()
+    {
+        if (empty($this->fromDate)) {
+            throw new \Exception('Please provide valid date for conversion');
+        }
     }
 
     /**
