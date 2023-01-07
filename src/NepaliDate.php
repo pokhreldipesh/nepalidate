@@ -408,6 +408,15 @@ class NepaliDate extends NepaliDateConverter
         }, $format);
     }
 
+    /**
+     * Validates date format.
+     *
+     * @param mixed $format
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
     public function checkForSupportedDateFormats($format)
     {
         preg_match_all('/\w*/m', $format, $matches);

@@ -131,31 +131,32 @@ class NepaliDateConverter
     {
         $diff = $this->getDiffDays($englishDate);
 
-        $baseNepaliDate = explode('/', $this->equivalentBaseNepaliDate);
+        list($yearIndex, $year, $month, $day, $weekDay) = $this->calculateDateUntillYearStart($diff);
 
-        $tillYear = (int) ($diff / 365);
+        $remainingDays = $this->getRemainingDaysFromYearStart($diff, $yearIndex);
 
-        $year = $tillYear + 2000;
-        $month = 1;
-        $day = 0;
-        $weekDay = $diff % 7 == 0 ? 7 : $diff % 7;
+        return $this->calculateRemainingDateFromDays($remainingDays, $year, $month, $day, $weekDay);
+    }
 
-        $diff = ($diff - array_reduce(array_slice($this->bs, 0, $tillYear), function ($sum, $months) use ($baseNepaliDate) {
-            if ($sum == 0) {
-                $months = array_slice($months, $baseNepaliDate[1] - 1);
-
-                return $sum + (array_sum($months) - $baseNepaliDate[2]);
-            }
-
-            return $sum + array_sum($months);
-        }, 0));
-
+    /**
+     * Calculate date from year start. i.e from  given year first month.
+     *
+     * @param mixed $diff
+     * @param mixed $year
+     * @param mixed $month
+     * @param mixed $day
+     * @param mixed $weekDay
+     *
+     * @return array
+     */
+    private function calculateRemainingDateFromDays(&$diff, &$year, &$month, &$day, &$weekDay)
+    {
         while ($diff > 0) {
-            $daysInIthMonth = $this->bs[$year][$month - 1];
+            $daysInMonth = $this->bs[$year][$month - 1];
 
             ++$day;
 
-            if ($day > $daysInIthMonth) {
+            if ($day > $daysInMonth) {
                 ++$month;
                 $day = 1;
             }
@@ -169,5 +170,43 @@ class NepaliDateConverter
         }
 
         return [$year, $month, $day, $weekDay];
+    }
+
+    /**
+     * Calculate date until year start.
+     *
+     * @return array<int>
+     */
+    private function calculateDateUntillYearStart(int $diff)
+    {
+        $yearIndex = (int) ($diff / 365);
+
+        return [
+            $yearIndex,
+            $yearIndex + 2000,
+            1,
+            0,
+            $diff % 7 == 0 ? 7 : $diff % 7,
+        ];
+    }
+
+    /**
+     * Calculate days until year start.
+     *
+     * @return float
+     */
+    private function getRemainingDaysFromYearStart(string $diff, int $yearIndex)
+    {
+        $baseNepaliDate = explode('/', $this->equivalentBaseNepaliDate);
+
+        return $diff - array_reduce(array_slice($this->bs, 0, $yearIndex), function ($sum, $months) use ($baseNepaliDate) {
+            if ($sum == 0) {
+                $months = array_slice($months, $baseNepaliDate[1] - 1);
+
+                return $sum + (array_sum($months) - $baseNepaliDate[2]);
+            }
+
+            return $sum + array_sum($months);
+        }, 0);
     }
 }
