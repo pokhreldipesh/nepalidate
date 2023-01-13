@@ -69,6 +69,21 @@ $date->toNepali()->format('Y-m-d'); // 2050-10-8
 $date->toNepali()->format('Y F d g l'); // 2050 Magh 8 Gate Sukrabar
 ```
 
+### Comparision
+
+```php
+$date->isEqual('2048/10/5'); // return true or false
+
+$date->isGreaterThan('2048/10/5');
+
+$date->isGreaterThanOrEqual('2048/10/5');
+
+$date->isLessThan('2048/10/5');
+
+$date->isLessThanOrEqual('2048/10/5');
+
+```
+
 ### Local languages
 
 Currently nepali and english language are available but this is not limited, you can use your own language by using callback function.

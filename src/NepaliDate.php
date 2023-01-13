@@ -2,8 +2,10 @@
 
 namespace Dipesh\NepaliDate;
 
-class NepaliDate
+class NepaliDate implements Date
 {
+    use Comparison;
+
     /**
      * Converter instance.
      *
@@ -89,8 +91,18 @@ class NepaliDate
      */
     private function setDate($date)
     {
+        $this->fromDate = $this->formatUserDate($date);
+    }
+
+    private function formatUserDate($date)
+    {
         preg_match_all("/\d*/m", $date, $matches);
-        $this->fromDate = count(array_filter($matches[0])) ? implode('/', array_filter($matches[0])) : date('Y/m/d');
+
+        if (count(array_filter($matches[0])) < 3) {
+            throw new \Exception('Invalid date format.');
+        }
+
+        return implode('/', array_filter($matches[0]));
     }
 
     /**
@@ -452,7 +464,7 @@ class NepaliDate
      *
      * @throws \Exception
      */
-    public function dateValidationBeforeConvert()
+    private function dateValidationBeforeConvert()
     {
         if (empty($this->fromDate)) {
             throw new \Exception('Please provide valid date for conversion');
@@ -468,7 +480,7 @@ class NepaliDate
      *
      * @throws \Exception
      */
-    public function checkForSupportedDateFormats($format)
+    private function checkForSupportedDateFormats($format)
     {
         preg_match_all('/\w*/m', $format, $matches);
 
