@@ -1,6 +1,6 @@
 <?php
 
-namespace Dipesh\NepaliDate;
+namespace Dipesh\NepaliDate\Core;
 
 interface Date
 {

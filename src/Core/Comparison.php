@@ -1,6 +1,6 @@
 <?php
 
-namespace Dipesh\NepaliDate;
+namespace Dipesh\NepaliDate\Core;
 
 trait Comparison
 {
@@ -13,10 +13,7 @@ trait Comparison
      */
     public function compare(string $date1, string $date2, $operator = '=')
     {
-        $date1 = array_product(explode('/', $this->formatUserDate($date1)));
-        $date2 = array_product(explode('/', $this->formatUserDate($date2)));
-
-        return version_compare($date1, $date2, $operator);
+        return version_compare(array_product(explode('/', $this->formatUserDate($date1))), array_product(explode('/', $this->formatUserDate($date2))), $operator);
     }
 
     /**

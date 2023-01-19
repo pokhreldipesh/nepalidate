@@ -1,6 +1,6 @@
 <?php
 
-namespace Dipesh\NepaliDate;
+namespace Dipesh\NepaliDate\Core;
 
 class NepaliDateConverter
 {
@@ -210,5 +210,40 @@ class NepaliDateConverter
 
             return $sum + array_sum($months);
         }, 0);
+    }
+
+    /**
+     * Get diff days between two dates.
+     *
+     * @param mixed $fromDate
+     * @param mixed $toDate
+     * @param mixed $multiplier
+     *
+     * @return float
+     */
+    public function getDiffDaysFromNepaliDate($fromDate, $toDate, $multiplier = 1)
+    {
+        list($start_year, $start_month, $start_day) = explode('/', $fromDate);
+
+        list($end_year, $end_month, $end_day) = explode('/', $toDate);
+
+        if ($start_year > $end_year) {
+            $this->getDiffDaysFromNepaliDate($toDate, $fromDate, -1);
+        }
+
+        $total_days = 0;
+
+        // Calculate days from start year to end year
+        for ($year = $start_year; $year < $end_year; ++$year) {
+            $total_days += array_sum($this->bs[$year]);
+        }
+
+        // Calculate days from start month to end of start year
+        $total_days += array_sum(array_slice($this->bs[$start_year], $start_month - 1)) - $start_day;
+
+        // Calculate days from start of end year to end month
+        $total_days += array_sum(array_slice($this->bs[$end_year], 0, $end_month - 1)) + $end_day;
+
+        return $total_days;
     }
 }

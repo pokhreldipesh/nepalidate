@@ -2,6 +2,11 @@
 
 namespace Dipesh\NepaliDate;
 
+use Dipesh\NepaliDate\Core\Comparison;
+use Dipesh\NepaliDate\Core\Date;
+use Dipesh\NepaliDate\Core\NepaliDateConverter;
+use Dipesh\NepaliDate\Core\Translator;
+
 class NepaliDate implements Date
 {
     use Comparison;
@@ -18,12 +23,7 @@ class NepaliDate implements Date
      *
      * @var array
      */
-    protected $currentDate = [
-        'Y' => 0,
-        'm' => 1,
-        'd' => 1,
-        'w' => 0,
-    ];
+    protected $currentDate = [];
 
     /**
      * Current converted date stored in string format.
@@ -48,8 +48,6 @@ class NepaliDate implements Date
 
     /**
      * Translator.for locale.
-     *
-     * @var mixed
      */
     protected array $translator;
 
@@ -75,6 +73,7 @@ class NepaliDate implements Date
     public function __construct($date = null)
     {
         $this->translator = (new Translator())($this->defaultLang);
+
         if ($date) {
             $this->setDate($date);
         }
@@ -94,6 +93,15 @@ class NepaliDate implements Date
         $this->fromDate = $this->formatUserDate($date);
     }
 
+    /**
+     * Validate and format user date.
+     *
+     * @param mixed $date
+     *
+     * @return string
+     *
+     * @throws \Exception
+     */
     private function formatUserDate($date)
     {
         preg_match_all("/\d*/m", $date, $matches);
@@ -383,37 +391,7 @@ class NepaliDate implements Date
     {
         preg_match_all("/\d*/m", $date, $matches);
 
-        return $this->getDiffBetweenDates(implode('/', array_filter($matches[0])), $this->date);
-    }
-
-    /**
-     * Get difference between two nepali date in days.
-     *
-     * @param string $date1 fromat YYYY/mm/dd
-     * @param string $date2 fromat YYYY/mm/dd
-     *
-     * @return float
-     */
-    private function getDiffBetweenDates($date1, $date2, $multiplier = 1)
-    {
-        $date1 = explode('/', $date1);
-        $date2 = explode('/', $date2);
-
-        $diffYear = $date2[0] - $date1[0];
-
-        if ($diffYear < 0) {
-            return $this->getDiffBetweenDates(implode('/', $date2), implode('/', $date1), -1);
-        }
-
-        if ($diffYear == 0) {
-            $y = [];
-        } else {
-            $y = array_slice($this->converter->bs, $date2[0] - 2000 - abs($diffYear), abs($diffYear) + 1);
-        }
-
-        $totalSum = (array_sum(array_merge(...array_slice($y, 1, -1))) + (array_sum(array_slice(array_pop($y), 0, $date2[1] - 1)) + $date2[2]) + (array_sum(array_slice($y[0], $date1[1] - 1)) - $date1[2]));
-
-        return $totalSum * $multiplier;
+        return $this->converter->getDiffDaysFromNepaliDate(implode('/', array_filter($matches[0])), $this->date);
     }
 
     /**
