@@ -81,6 +81,16 @@ class NepaliDate implements Date
         $this->converter = new NepaliDateConverter();
     }
 
+    public function getMonths()
+    {
+        return $this->translator['months'];
+    }
+
+    public function getWeekDays()
+    {
+        return $this->translator['weeks'];
+    }
+
     /**
      * Set date for further operation.
      *
@@ -378,6 +388,26 @@ class NepaliDate implements Date
         $days = array_sum(array_merge(...array_slice($this->converter->bs, $this->currentDate['Y'] - 2000 - $years, $years)));
 
         $this->subDays($days);
+    }
+
+    /**
+     * Get last day of nepali date.
+     *
+     * @return string
+     */
+    public function lastDayOfMonth()
+    {
+        return $this->formatUserDate($this->currentDate['Y'].'/'.$this->currentDate['m'].'/'.$this->converter->bs[$this->currentDate['Y']][$this->currentDate['m'] - 1]);
+    }
+
+    /**
+     * Get first day of nepali date.
+     *
+     * @return string
+     */
+    public function firstDayOfMonth()
+    {
+        return $this->formatUserDate($this->currentDate['Y'].'/'.$this->currentDate['m'].'/1');
     }
 
     /**
