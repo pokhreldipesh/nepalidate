@@ -234,15 +234,22 @@ class NepaliDateConverter
         $total_days = 0;
 
         // Calculate days from start year to end year
-        for ($year = $start_year; $year < $end_year; ++$year) {
+        for ($year = $start_year + 1; $year < $end_year; ++$year) {
             $total_days += array_sum($this->bs[$year]);
         }
 
-        // Calculate days from start month to end of start year
-        $total_days += array_sum(array_slice($this->bs[$start_year], $start_month - 1)) - $start_day;
+        if (($start_year == $end_year) && ($start_month == $end_month)) {
+            return $end_day - $start_day;
+        } elseif ($start_year == $end_year) {
+            // dd(array_slice($this->bs[$start_year], $start_month, ));
+            $total_days += array_sum(array_slice($this->bs[$start_year], $start_month - 1, $end_month - $start_month)) - $start_day + $end_day;
+        } else {
+            // Calculate days from start month to end of start year
+            $total_days += array_sum(array_slice($this->bs[$start_year], $start_month)) - $start_day;
 
-        // Calculate days from start of end year to end month
-        $total_days += array_sum(array_slice($this->bs[$end_year], 0, $end_month - 1)) + $end_day;
+            // Calculate days from start of end year to end month
+            $total_days += array_sum(array_slice($this->bs[$end_year], 0, $end_month)) + $end_day;
+        }
 
         return $total_days;
     }
