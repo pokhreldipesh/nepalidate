@@ -1,10 +1,10 @@
 <?php
 
-namespace Dipesh\NepaliDate\Core;
+namespace Dipesh\NepaliDate\Concerns;
 
-class NepaliDateConverter
+trait HasCalenderLookupTable
 {
-    public $bs = [
+    private static $bs = [
         2000 => [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
         2001 => [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
         2002 => [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
@@ -103,154 +103,14 @@ class NepaliDateConverter
      *
      * @var string
      */
-    protected $baseEnglishDate = '1944/01/01';
+    protected static string $baseEnglishDate = '1944/01/01';
+
+    protected static int $baseWeekDay = 7;
 
     /**
-     * Set equivalent pointer for base nepali date according to base english date.
+     * Set equivalent pointer for base nepali date based on english date.
      *
      * @var string
      */
-    protected $equivalentBaseNepaliDate = '2000/09/17';
-
-    /**
-     * Get diff days from base english date.
-     *
-     * @param string $date
-     */
-    private function getDiffDays(string $englishDate): int
-    {
-        return (int) date_diff(date_create($this->baseEnglishDate), date_create($englishDate))->format('%a');
-    }
-
-    /**
-     * Convert english date to nepali date by given english date.
-     *
-     * @param string $date
-     */
-    public function convert(string $englishDate): array
-    {
-        $diff = $this->getDiffDays($englishDate);
-
-        list($yearIndex, $year, $month, $day, $weekDay) = $this->calculateDateUntillYearStart($diff);
-
-        if ($yearIndex > 1) {
-            $diff = $this->getRemainingDaysFromYearStart($diff, $yearIndex);
-        }
-
-        return $this->calculateRemainingDateFromDays($diff, $year, $month, $day, $weekDay);
-    }
-
-    /**
-     * Calculate date from year start. i.e from  given year first month.
-     *
-     * @param mixed $diff
-     * @param mixed $year
-     * @param mixed $month
-     * @param mixed $day
-     * @param mixed $weekDay
-     *
-     * @return array
-     */
-    private function calculateRemainingDateFromDays(&$diff, &$year, &$month, &$day, &$weekDay)
-    {
-        while ($diff > 0) {
-            $daysInMonth = $this->bs[$year][$month - 1];
-
-            ++$day;
-
-            if ($day > $daysInMonth) {
-                ++$month;
-                $day = 1;
-            }
-
-            if ($month > 12) {
-                ++$year;
-                $month = 1;
-            }
-
-            --$diff;
-        }
-
-        return [$year, $month, $day, $weekDay];
-    }
-
-    /**
-     * Calculate date until year start.
-     *
-     * @return array<int>
-     */
-    private function calculateDateUntillYearStart(int $diff)
-    {
-        $yearIndex = $diff <= 366 ? 0 : (int) ($diff / 365);
-
-        return [
-            $yearIndex, // index
-            $yearIndex + 2000, // year
-            $yearIndex == 0 ? 9 : 1, // month
-            $yearIndex == 0 ? 17 : 0, // day
-            $diff % 7 == 0 ? 7 : $diff % 7, // week day
-        ];
-    }
-
-    /**
-     * Calculate days until year start.
-     *
-     * @return float
-     */
-    private function getRemainingDaysFromYearStart(string $diff, int $yearIndex)
-    {
-        $baseNepaliDate = explode('/', $this->equivalentBaseNepaliDate);
-
-        return $diff - array_reduce(array_slice($this->bs, 0, $yearIndex), function ($sum, $months) use ($baseNepaliDate) {
-            if ($sum == 0) {
-                $months = array_slice($months, $baseNepaliDate[1] - 1);
-
-                return $sum + (array_sum($months) - $baseNepaliDate[2]);
-            }
-
-            return $sum + array_sum($months);
-        }, 0);
-    }
-
-    /**
-     * Get diff days between two dates.
-     *
-     * @param mixed $fromDate
-     * @param mixed $toDate
-     * @param mixed $multiplier
-     *
-     * @return float
-     */
-    public function getDiffDaysFromNepaliDate($fromDate, $toDate, $multiplier = 1)
-    {
-        list($start_year, $start_month, $start_day) = explode('/', $fromDate);
-
-        list($end_year, $end_month, $end_day) = explode('/', $toDate);
-
-        if ($start_year > $end_year) {
-            $this->getDiffDaysFromNepaliDate($toDate, $fromDate, -1);
-        }
-
-        $total_days = 0;
-
-        // Calculate days from start year to end year
-        for ($year = $start_year + 1; $year < $end_year; ++$year) {
-            $total_days += array_sum($this->bs[$year]);
-        }
-
-        if (($start_year == $end_year) && ($start_month == $end_month)) {
-            return $end_day - $start_day;
-        } elseif ($start_year == $end_year) {
-            // dd(array_slice($this->bs[$start_year], $start_month, ));
-            $total_days += array_sum(array_slice($this->bs[$start_year], $start_month - 1, $end_month - $start_month)) - $start_day + $end_day;
-        } else {
-            // Calculate days from start month to end of start year
-            $total_days += array_sum(array_slice($this->bs[$start_year], $start_month)) - $start_day;
-
-            // Calculate days from start of end year to end month
-            $total_days += array_sum(array_slice($this->bs[$end_year], 0, $end_month)) + $end_day;
-        }
-
-        return $total_days;
-    }
+    protected static string $equivalentNepaliDate = '2000/09/17';
 }
