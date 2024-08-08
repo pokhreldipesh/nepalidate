@@ -1,6 +1,6 @@
 {
     "name": "dipesh/nepali-date",
-    "description": "Nepali Date",
+    "description": "The Nepali Date package is designed for working with the Nepali calendar.",
     "type": "library",
     "keywords": ["date", "nepali", "nepali date", "date converter", "nepali date converter"],
     "autoload": {
@@ -20,7 +20,6 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "phpunit/phpunit": "^9.5"
+        "php": ">=8.0"
     }
 }
