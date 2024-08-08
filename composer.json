@@ -3,6 +3,13 @@
     "description": "The Nepali Date package is designed for working with the Nepali calendar.",
     "type": "library",
     "keywords": ["date", "nepali", "nepali date", "date converter", "nepali date converter"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "dipesh pokhrel",
+            "email": "dipeshpokhrel404@gmail.com"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Dipesh\\NepaliDate\\": "src/"
@@ -13,12 +20,6 @@
             "Tests\\": "tests/"
         }
     },
-    "authors": [
-        {
-            "name": "dipesh pokhrel",
-            "email": "dipeshpokhrel404@gmail.com"
-        }
-    ],
     "require": {
         "php": ">=8.0"
     }
