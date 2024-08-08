@@ -2,7 +2,6 @@
 
 namespace Dipesh\NepaliDate;
 
-use Carbon\Carbon;
 use Dipesh\NepaliDate\Concerns\HasDate;
 use Dipesh\NepaliDate\Contracts\Date;
 use Dipesh\NepaliDate\Contracts\Formatter;
@@ -18,6 +17,7 @@ use Exception;
  * Nepali Date
  *
  * @method self addDays(int $day)
+ * @method self subDays(int $day)
  * @method int weekDay()
  * @method int getTotalDaysFromBaseDate()
  * @method int diffDays(string $date)
@@ -29,15 +29,67 @@ class NepaliDate implements Date
 {
     use HasDate;
 
+    public string $date;
+
+    public int $day;
+
+    public int $month;
+
+    public int $year;
+
+    protected DateOperation $calenderOperation;
+
     public Language $formattingLanguage;
 
     /**
      * @throws Exception
-     * @property string $date
+     * @property ?string $date
      */
-    public function __construct(string $date)
+    public function __construct(string $date = null, Language $language = new English())
     {
+        $this->formattingLanguage = $language;
+
+        $this->calenderOperation = new DateOperation($this);
+
+        if ($date === null) {
+
+            $date = self::now();
+        }
+
         $this->setUp($date);
+    }
+
+    /**
+     * Initialize calender
+     *
+     * @param string $date
+     * @return void
+     * @throws Exception
+     */
+    public function setUp(string $date): void
+    {
+        list(
+            $this->year,
+            $this->month,
+            $this->day,
+            ) = self::validateDateAndGetRaw($date);
+
+        $this->date = implode("/", [$this->year, $this->month, $this->day]);
+    }
+
+    /**
+     * Create date from instance
+     *
+     * @param string $date
+     * @return NepaliDate|$this
+     * @throws Exception
+     */
+    public function create(string $date): static
+    {
+        $instance = clone $this;
+        $instance->setUp($date);
+
+        return $instance;
     }
 
     /**
@@ -81,7 +133,7 @@ class NepaliDate implements Date
         } elseif ($language == 'en') {
             return new English();
         } else {
-            throw new Exception("Unsupported language type");
+            throw new Exception("The specified language type is not supported.");
         }
     }
 
@@ -100,20 +152,20 @@ class NepaliDate implements Date
     }
 
     /**
-     * Magic method to call calendar operations functions
+     * Magic method to call date operations
      *
      * @param string $name
      * @param array|string $arguments
      *
-     * @return int|self
+     * @return bool|int|self
      * @throws Exception
      */
-    public function __call(string $name, array|string $arguments): int|self
+    public function __call(string $name, array|string $arguments): bool|int|self
     {
-        if ($name == 'addDays')
+        if ($name == 'addDays' || $name == "subDays")
         {
              $instance = clone $this;
-             $instance->setUp($this->calenderOperation->addDays(...$arguments));
+             $instance->setUp($this->calenderOperation->$name(...$arguments));
              return $instance;
         }
 
@@ -121,69 +173,8 @@ class NepaliDate implements Date
     }
 
     /**
-     * Get current date
-     *
-     * @return $this
-     * @throws Exception
+     * @return void
      */
-    public static function now(): static
-    {
-        return self::fromADDate(Carbon::now()->format("Y-m-d"));
-    }
-    /**
-     * Convert calender date to AD
-     *
-     * @return Carbon
-     * @throws Exception
-     */
-    public function toAd(): Carbon
-    {
-        return Carbon::parse(self::$baseEnglishDate)->addDays(
-            $this->calenderOperation->getTotalDaysFromBaseDate($this->date)
-        );
-    }
-
-    /**
-     * Convert date from AD to BS
-     *
-     * @param string $date
-     * @return static
-     * @throws Exception
-     */
-    public static function fromADDate(string $date): static
-    {
-        return (new static(self::$equivalentNepaliDate))->addDays(Carbon::parse(self::$baseEnglishDate)->diffInDays($date));
-    }
-
-    /**
-     * Get day from date
-     *
-     * @return int|string
-     */
-    public function day(): int|string
-    {
-        return FormatDate::formatNumberToLanguage($this->day, $this->formattingLanguage);
-    }
-
-    /**
-     * Get month from date
-     *
-     * @return int|string
-     */
-    public function month(): int|string
-    {
-        return FormatDate::formatNumberToLanguage($this->month, $this->formattingLanguage);
-    }
-
-    /**
-     * Get year from date
-     *
-     * @return int|string
-     */
-    public function year(): int|string
-    {
-        return FormatDate::formatNumberToLanguage($this->year, $this->formattingLanguage);
-    }
     public function __clone(): void
     {
         $this->calenderOperation = new DateOperation($this);

@@ -64,7 +64,7 @@ class DateOperation implements DateOperations
     /**
      * @param int $day
      *
-     * @return Date
+     * @return string
      * @throws Exception
      */
     public function addDays(int $day): string
@@ -87,6 +87,18 @@ class DateOperation implements DateOperations
             }
         }
         return sprintf("%s/%s/%s", $finalYear, $finalMonth, $finalDay);
+    }
+
+    /**
+     * Subtract day from date
+     *
+     * @param int $day
+     * @return string
+     * @throws Exception
+     */
+    public function subDays(int $day): string
+    {
+        return $this->addDays(-$day);
     }
 
     /**

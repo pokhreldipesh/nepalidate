@@ -21,13 +21,19 @@ Creating Instances
 ```php
 use Dipesh\NepaliDate\NepaliDate;
 
-$date = new NepaliDate("2050-8-10") // returns full calendar instance
+$date = new NepaliDate(language: new \Dipesh\NepaliDate\lang\Nepali()); // Creates current date instance with provided language.
+                                                                        
+//or
+$date = new NepaliDate("2050-8-10") // Creates date instance with default language configuration
 
 //or
-$date = NepaliDate::make("2070-8-20");
+$date = NepaliDate::make("2070-8-20"); // Creates date instance with default language configuration
 
 //or
-$date = NepaliDate::now();
+$date = NepaliDate::now(); // Creates current date instance
+
+// Work with global instance 
+$date->create($date); // Creates an immutable date instance while retaining the previous configuration settings.
 
 ```
 
@@ -38,11 +44,18 @@ $date->toAd(); // output Carbon date format
 //or
 $date = NepaliDate::fromADDate("1990-9-10");
 ```
-
-### Date Operations
+### Date Component Retrieval
+```php
+$date->year();   // Retrieves the year based on the language configuration
+$date->month();  // Retrieves the month based on the language configuration
+$date->day();    // Retrieves the day based on the language configuration
+```
+### Date Manipulation and Comparison Methods
 
 ```php
 $date->addDays($days);
+
+$date->subDays($days);
 
 $date->weekDay();
 

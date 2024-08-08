@@ -2,41 +2,13 @@
 
 namespace Dipesh\NepaliDate\Concerns;
 
-use Dipesh\NepaliDate\lang\English;
-use Dipesh\NepaliDate\Services\DateOperation;
+use Carbon\Carbon;
+use Dipesh\NepaliDate\Services\FormatDate;
 use Exception;
 
 trait HasDate
 {
     use HasCalenderLookupTable;
-
-    public $date;
-    public $day;
-    public $month;
-    public $year;
-    protected DateOperation $calenderOperation;
-
-    /**
-     * Initialize calender
-     *
-     * @param string $date
-     * @return void
-     * @throws Exception
-     */
-    public function setUp(string $date): void
-    {
-        list(
-            $this->year,
-            $this->month,
-            $this->day,
-        ) = self::validateDateAndGetRaw($date);
-
-        $this->date = implode("/", [$this->year, $this->month, $this->day]);
-
-       $this->setLang(new English());
-
-        $this->calenderOperation = new DateOperation($this);
-    }
 
     /**
      * Get formatted date string for calender
@@ -65,5 +37,70 @@ trait HasDate
         }
 
         return array_values(array_filter($matches[0]));
+    }
+
+    /**
+     * Get current date
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public static function now(): static
+    {
+        return self::fromADDate(Carbon::now()->format("Y-m-d"));
+    }
+    /**
+     * Convert calender date to AD
+     *
+     * @return Carbon
+     * @throws Exception
+     */
+    public function toAd(): Carbon
+    {
+        return Carbon::parse(self::$baseEnglishDate)->addDays(
+            $this->calenderOperation->getTotalDaysFromBaseDate($this->date)
+        );
+    }
+
+    /**
+     * Convert date from AD to BS
+     *
+     * @param string $date
+     * @return static
+     * @throws Exception
+     */
+    public static function fromADDate(string $date): static
+    {
+        return (new static(self::$equivalentNepaliDate))->addDays(Carbon::parse(self::$baseEnglishDate)->diffInDays($date));
+    }
+
+    /**
+     * Get day from date
+     *
+     * @return int|string
+     */
+    public function day(): int|string
+    {
+        return FormatDate::formatNumberToLanguage($this->day, $this->formattingLanguage);
+    }
+
+    /**
+     * Get month from date
+     *
+     * @return int|string
+     */
+    public function month(): int|string
+    {
+        return FormatDate::formatNumberToLanguage($this->month, $this->formattingLanguage);
+    }
+
+    /**
+     * Get year from date
+     *
+     * @return int|string
+     */
+    public function year(): int|string
+    {
+        return FormatDate::formatNumberToLanguage($this->year, $this->formattingLanguage);
     }
 }
