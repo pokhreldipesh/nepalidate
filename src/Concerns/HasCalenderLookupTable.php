@@ -124,7 +124,7 @@ trait HasCalenderLookupTable
      *
      * @var int
      */
-    protected static int $baseWeekDay = 7;
+    public static int $baseWeekDay = 7;
 
     /**
      * Equivalent Nepali Date.

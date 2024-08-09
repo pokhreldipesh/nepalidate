@@ -3,6 +3,7 @@
 namespace Dipesh\NepaliDate\Services;
 
 use Dipesh\NepaliDate\Concerns\HasCalenderLookupTable;
+use Dipesh\NepaliDate\InvalidDateRangeException;
 use Exception;
 
 class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
@@ -16,14 +17,19 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
      * the days up to the provided year, month, and day. It provides an efficient way to convert
      * a specific date into a cumulative day count.
      *
-     * @param int $year  The year component of the date.
+     * @param int $year The year component of the date.
      * @param int $month The month component of the date (1-12).
-     * @param int $day   The day component of the date (1-32, depending on the month).
+     * @param int $day The day component of the date (1-32, depending on the month).
      * @return int       The total number of days from the beginning of the BS calendar to the given date.
+     * @throws Exception
      */
     public function totalDays(int $year, int $month, int $day): int
     {
         $totalDays = 0;
+
+        if (!isset(self::$bs[$year])) {
+            throw new InvalidDateRangeException();
+        }
 
         foreach (self::$bs as $y => $months) {
             if ($y < $year) {
@@ -72,6 +78,28 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
             }
         }
 
-        throw new Exception("Total days exceed the range in the BS array.");
+        throw new InvalidDateRangeException();
+    }
+
+    /**
+     * Calculate the corresponding weekday for a given number of days.
+     *
+     * This method calculates the weekday by taking the modulus of the number of days
+     * with the base weekday. If the result is negative, it adjusts the day to ensure
+     * it falls within the valid range of weekdays (1-7). The return value corresponds
+     * to the day of the week, where 1 represents Sunday and 7 represents Saturday.
+     *
+     * @param int $days The number of days to calculate the weekday for.
+     * @return int The weekday corresponding to the given number of days (1 for Sunday, 7 for Saturday).
+     */
+    public function weekDay(int $days):int
+    {
+        $day = $days % self::$baseWeekDay;
+
+        //Calculate weekday traversing backward from base date
+        if ($day < 0) {
+            $day = $day+7;
+        }
+        return $day == 0 ? 7 : $day;
     }
 }

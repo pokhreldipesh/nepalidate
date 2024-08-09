@@ -3,10 +3,12 @@
 namespace Dipesh\NepaliDate\Concerns;
 
 use Dipesh\NepaliDate\Contracts\Date;
+use Dipesh\NepaliDate\Services\DaysCalculator;
 use Exception;
 
 trait HasDateOperation
 {
+
     /**
      * Calculates the total number of days from a base date to the specified date.
      *
@@ -25,11 +27,7 @@ trait HasDateOperation
         } else {
             list($year, $month, $day) = $this->validateDateAndGetComponents($date);
         }
-        $total = $this->daysCalculator->totalDays($year, $month, $day) - 263;
-        if ($total < 0) {
-            throw new \Exception("Date can not be less than 2000/09/17.");
-        }
-        return $total;
+        return $this->daysCalculator->totalDays($year, $month, $day) - 263;
     }
 
     /**
@@ -58,8 +56,6 @@ trait HasDateOperation
      */
     public function weekDay(): int
     {
-        $day = $this->getTotalDaysFromBaseDate($this->date) % 7;
-
-        return $day == 0 ? 7 : $day;
+        return $this->daysCalculator->weekDay($this->getTotalDaysFromBaseDate($this->date));
     }
 }
