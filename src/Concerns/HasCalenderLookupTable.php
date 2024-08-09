@@ -4,7 +4,15 @@ namespace Dipesh\NepaliDate\Concerns;
 
 trait HasCalenderLookupTable
 {
-    private static $bs = [
+    /**
+     * Nepali Calendar Lookup Table.
+     *
+     * This array holds the number of days for each month in the Nepali calendar for the years 2000 to 2090.
+     * Each year is represented by an array of 12 integers, where each integer represents the number of days in that month.
+     *
+     * @var array<int, array<int, int>>
+     */
+    private static array $bs = [
         2000 => [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
         2001 => [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
         2002 => [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
@@ -99,16 +107,30 @@ trait HasCalenderLookupTable
     ];
 
     /**
-     * Set pointer for base english date.
+     * Base English Date.
+     *
+     * This property sets the base English date ('YYYY/MM/DD') that corresponds to a specific Nepali date.
+     * It is used as a reference point for conversions between English and Nepali dates.
      *
      * @var string
      */
     protected static string $baseEnglishDate = '1944/01/01';
 
+    /**
+     * Base Weekday.
+     *
+     * This property defines the weekday of the base English date (1 for Sunday, 7 for Saturday).
+     * It helps in calculating the corresponding weekday for Nepali dates.
+     *
+     * @var int
+     */
     protected static int $baseWeekDay = 7;
 
     /**
-     * Set equivalent pointer for base nepali date based on english date.
+     * Equivalent Nepali Date.
+     *
+     * This property sets the equivalent Nepali date ('YYYY/MM/DD') that corresponds to the base English date.
+     * It is used as a reference point for conversions between English and Nepali dates.
      *
      * @var string
      */

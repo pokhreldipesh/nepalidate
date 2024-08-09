@@ -2,152 +2,193 @@
 
 namespace Dipesh\NepaliDate\Services;
 
-
 use Dipesh\NepaliDate\Contracts\Date;
 use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
 use Dipesh\NepaliDate\lang\English;
 use Exception;
 
-class FormatDate implements  Formatter
+/**
+ * Class FormatDate
+ *
+ * Handles the formatting of Nepali dates based on provided formats and language settings.
+ */
+class FormatDate implements Formatter
 {
+    /**
+     * @var array $date Stores the date components like year, month, day, and weekday.
+     */
     private array $date = ['Y', 'm', 'd', 'w'];
 
-    private $calender;
+    /**
+     * @var Date|null $calendar The date object to be formatted.
+     */
+    private ?Date $calendar = null;
 
+    /**
+     * @var array $supportedFormats List of supported date format characters.
+     */
     protected array $supportedFormats = ['Y', 'm', 'M', 'F', 'd', 'w', 'D', 'l', 'g'];
 
+    /**
+     * @var Language $defaultLang The language used for formatting.
+     */
     protected Language $defaultLang;
 
     /**
-     * @param Date|null $calender
+     * FormatDate constructor.
+     *
+     * @param Date|null $calendar The date object to format.
+     * @param Language|string $lang The language to use for formatting, defaults to English.
      */
-    public function __construct(Date $calender = null, Language|string $lang = new English())
+    public function __construct(Date $calendar = null, Language|string $lang = new English())
     {
-        if($calender) {
-            $this->setUp(calender:$calender, lang:$lang);
+        if ($calendar) {
+            $this->setUp(calendar: $calendar, lang: $lang);
         }
     }
 
     /**
-     * Setup formatter
+     * Setup the formatter with a specific date and language.
      *
-     * @param Date $calender
-     * @param Language $lang
-     * @return FormatDate
+     * @param Date $calendar The date object to format.
+     * @param Language $lang The language to use for formatting.
+     * @return static
      */
-    public function setUp(Date $calender, Language $lang): static
+    public function setUp(Date $calendar, Language $lang): static
     {
-        $this->calender = $calender;
+        $this->calendar = $calendar;
         $this->defaultLang = $lang;
 
-        $this->date = array_combine($this->date, [$calender->year, $calender->month, $calender->day, $calender->weekDay()]);
+        $this->date = array_combine($this->date, [
+            $calendar->year,
+            $calendar->month,
+            $calendar->day,
+            $calendar->weekDay()
+        ]);
 
         return $this;
     }
 
     /**
-     * Format given date
+     * Formats the date according to the provided format string.
      *
-     * @param string $format
-     *
+     * @param string $format The format string (e.g., 'Y/m/d').
      * @return string
-     * @throws Exception
+     * @throws Exception If the format string contains unsupported characters.
      */
     public function format(string $format = 'Y/m/d'): string
     {
-        //dd($format);
-        $this->checkForSupportedDateFormats($format);
+        $this->validateSupportedFormats($format);
 
-        return preg_replace_callback("/\w*/m", function ($matches)  {
-            if ($format = $matches[0]) {
-                if (!in_array($format, ['Y', 'm', 'd', 'w'])) {
-                    // check for supported format
-                    if (in_array($format, ['D', 'l'])) {
-                        return $this->formatWeekDay($format);
-                    } elseif (in_array($format, ['M', 'F'])) {
-                        return $this->formatMonth($format);
-                    } elseif ($format == 'g') {
-                        return $this->defaultLang->getGate();
-                    }
-                }
+        return preg_replace_callback("/\w*/m", function ($matches) {
+            $formatChar = $matches[0];
 
-                return self::formatNumberToLanguage($this->date[$format], $this->defaultLang);
-
+            if ($formatChar && in_array($formatChar, $this->supportedFormats)) {
+                return $this->processFormatChar($formatChar);
             }
-            return null;
 
+            return null;
         }, $format);
     }
 
     /**
-     * Convert number to nepali number
+     * Converts numbers to the appropriate language-specific digits.
      *
-     * @param int $number
-     * @param Language $language
+     * @param int $number The number to convert.
+     * @param Language $language The language to use for conversion.
      * @return string
      */
     public static function formatNumberToLanguage(int $number, Language $language): string
     {
         return preg_replace_callback("/\d/m", function ($matches) use ($language) {
             return $language->getDigit($matches[0]);
-        }, $number);
+        }, (string)$number);
     }
 
     /**
-     * validate supported date format
+     * Validates if the provided format string contains only supported formats.
      *
-     * @throw ?Exception
-     * @throws Exception
+     * @param string $format The format string to validate.
+     * @throws Exception If the format string contains unsupported formats.
      */
-    private function checkForSupportedDateFormats($format): void
+    private function validateSupportedFormats(string $format): void
     {
         preg_match_all('/\w*/m', $format, $matches);
 
-        if (!(count(array_filter($matches[0])) && (count(array_intersect(array_filter($matches[0]), $this->supportedFormats)) == count(array_filter($matches[0]))))) {
+        $formatsInString = array_filter($matches[0]);
+        $unsupportedFormats = array_diff($formatsInString, $this->supportedFormats);
+
+        if (!empty($unsupportedFormats)) {
             throw new Exception('Invalid date format');
         }
     }
 
     /**
-     * @param string $format
-     * @return int|mixed|string
-     * @throws Exception
+     * Formats the month according to the provided format character.
+     *
+     * @param string $format The month format character ('m', 'M', or 'F').
+     * @return mixed
+     * @throws Exception If the provided month format is not supported.
      */
     public function formatMonth(string $format = 'm'): mixed
     {
-        $supportedMonthFormat = ['m', 'M', 'F'];
+        $supportedMonthFormats = ['m', 'M', 'F'];
 
-        if (!in_array($format, $supportedMonthFormat)) {
-            throw new Exception('Provided month format is not supported. please provide  m,M,F format');
+        if (!in_array($format, $supportedMonthFormats)) {
+            throw new Exception('Unsupported month format. Please use "m", "M", or "F".');
         }
 
         if (in_array($format, ['M', 'F'])) {
-            return $this->defaultLang->getMonth($this->calender->month - 1);
+            return $this->defaultLang->getMonth($this->calendar->month - 1);
         }
 
         return $this->date[$format];
     }
 
     /**
-     * @param string $format
-     * @return mixed|string
-     * @throws Exception
+     * Formats the weekday according to the provided format character.
+     *
+     * @param string $format The weekday format character ('w', 'D', or 'l').
+     * @return mixed
+     * @throws Exception If the provided weekday format is not supported.
      */
     private function formatWeekDay(string $format = 'w'): mixed
     {
-        $supportedDayFormat = ['w', 'D', 'l'];
+        $supportedDayFormats = ['w', 'D', 'l'];
 
-        if (!in_array($format, $supportedDayFormat)) {
-            throw new Exception('Provided day format is not supported. please provide  d,D,l format');
+        if (!in_array($format, $supportedDayFormats)) {
+            throw new Exception('Unsupported day format. Please use "w", "D", or "l".');
         }
 
         if (in_array($format, ['D', 'l'])) {
-
-            return $this->defaultLang->getWeek($this->calender->weekDay() - 1 )[$format];
+            return $this->defaultLang->getWeek($this->calendar->weekDay() - 1)[$format];
         }
 
         return $this->date[$format];
     }
 
+    /**
+     * Processes the given format character and returns the formatted value.
+     *
+     * @param string $formatChar The format character to process.
+     * @return string
+     * @throws Exception
+     */
+    private function processFormatChar(string $formatChar): string
+    {
+        if (in_array($formatChar, ['D', 'l'])) {
+            return $this->formatWeekDay($formatChar);
+        }
+
+        if (in_array($formatChar, ['M', 'F'])) {
+            return $this->formatMonth($formatChar);
+        }
+
+        if ($formatChar == 'g') {
+            return $this->defaultLang->getGate();
+        }
+
+        return self::formatNumberToLanguage($this->date[$formatChar], $this->defaultLang);
+    }
 }
