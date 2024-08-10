@@ -17,11 +17,13 @@ composer require dipesh/nepali-date
 
 Creating Instances
 
-
 ```php
 use Dipesh\NepaliDate\NepaliDate;
 
-$date = new NepaliDate(language: new \Dipesh\NepaliDate\lang\Nepali()); // Creates current date instance with provided language.
+$date = new NepaliDate(language: 'np or en'); // Creates current date instance with provided language.
+
+//or
+$date = $date->setLang('np') or $date->setLang(new \Dipesh\NepaliDate\lang\Nepali()) // Creates immutable instance
                                                                         
 //or
 $date = new NepaliDate("2050-8-10") // Creates date instance with default language configuration
@@ -49,6 +51,8 @@ $date = NepaliDate::fromADDate("1990-9-10");
 $date->year();   // Retrieves the year based on the language configuration
 $date->month();  // Retrieves the month based on the language configuration
 $date->day();    // Retrieves the day based on the language configuration
+$date->weekDay(); // Retrieves the day week day
+
 ```
 ### Date Manipulation and Comparison Methods
 
@@ -56,8 +60,6 @@ $date->day();    // Retrieves the day based on the language configuration
 $date->addDays($days);
 
 $date->subDays($days);
-
-$date->weekDay();
 
 $date->isEqual('2048/10/5'); // return true or false
 
@@ -70,13 +72,28 @@ $date->isLessThan('2048/10/5');
 
 Supported format characters: Y, m, M, F, d, w, D, l, g
 
+| Format Character | Description                                    | Example Output                        |
+|------------------|------------------------------------------------|---------------------------------------|
+| `Y`              | Year (4-digit format)                          | `2078`                                |
+| `m`              | Month (Numeric, zero-padded, 01-12)            | `01` for January, `12` for December   |
+| `M`              | Month (Short textual representation)           | `Jan` for January, `Dec` for December |
+| `F`              | Month (Full textual representation)            | `January`, `December`                 |
+| `d`              | Day of the month (Numeric, zero-padded, 01-31) | `01` for the 1st, `31` for the 31st   |
+| `w`              | Day of the week (Numeric, 1-7)                 | `1` for Sunday, `7` for Saturday      |
+| `D`              | Day of the week (Short textual representation) | `Sun` for Sunday, `Wed` for Saturday  |
+| `l`              | Day of the week (Full textual representation)  | `Sunday`, `Wednesday`                 |
+| `g`              | This is not for english(AD) format             | `Gate` or `गते`                       |
+
 ```php
 
 $date->format('Y-m-d'); // 2050-10-8
 
 $date->format('Y F d g l'); // 2050 Magh 8 Gate Sukrabar
 
-$date->lang('np')->format("Y-m-d, M d g l") // २०५०-१०-२८, माघ २८ गते बिहिबार"
+$date->format("Y-m-d, M d g l") // २०५०-१०-२८, माघ २८ गते बिहिबार"
+
+//or
+$date->format("Y-m-d, M d g l", 'np')
 ```
 
 ## License
