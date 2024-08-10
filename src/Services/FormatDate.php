@@ -2,10 +2,9 @@
 
 namespace Dipesh\NepaliDate\Services;
 
-use Dipesh\NepaliDate\Contracts\Date;
+use Dipesh\NepaliDate\Contracts\Date as DateAlias;
 use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
-use Dipesh\NepaliDate\lang\English;
 use Exception;
 
 /**
@@ -21,11 +20,6 @@ class FormatDate implements Formatter
     private array $date = ['Y', 'm', 'd', 'w'];
 
     /**
-     * @var Date|null $calendar The date object to be formatted.
-     */
-    private ?Date $calendar = null;
-
-    /**
      * @var array $supportedFormats List of supported date format characters.
      */
     protected array $supportedFormats = ['Y', 'm', 'M', 'F', 'd', 'w', 'D', 'l', 'g'];
@@ -36,35 +30,31 @@ class FormatDate implements Formatter
     protected Language $defaultLang;
 
     /**
-     * FormatDate constructor.
-     *
-     * @param Date|null $calendar The date object to format.
-     * @param Language|string $lang The language to use for formatting, defaults to English.
+     * @throws Exception
      */
-    public function __construct(Date $calendar = null, Language|string $lang = new English())
+    public function __invoke(string $format, DateAlias $date, Language $lang): string
     {
-        if ($calendar) {
-            $this->setUp(calendar: $calendar, lang: $lang);
-        }
+        $this->setUp($date, $lang);
+
+        return $this->format($format);
     }
 
     /**
-     * Setup the formatter with a specific date and language.
+     * Set up the formatter with a specific date and language.
      *
-     * @param Date $calendar The date object to format.
+     * @param Date $date
      * @param Language $lang The language to use for formatting.
      * @return static
      */
-    public function setUp(Date $calendar, Language $lang): static
+    public function setUp(DateAlias $date, Language $lang): static
     {
-        $this->calendar = $calendar;
         $this->defaultLang = $lang;
 
         $this->date = array_combine($this->date, [
-            $calendar->year,
-            $calendar->month,
-            $calendar->day,
-            $calendar->weekDay()
+            $date->year,
+            $date->month,
+            $date->day,
+            fn()=> $date->weekDay()
         ]);
 
         return $this;
@@ -99,7 +89,7 @@ class FormatDate implements Formatter
      * @param Language $language The language to use for conversion.
      * @return string
      */
-    public static function formatNumberToLanguage(int $number, Language $language): string
+    public function formatNumber(int $number, Language $language): string
     {
         return preg_replace_callback("/\d/m", function ($matches) use ($language) {
             return $language->getDigit($matches[0]);
@@ -140,7 +130,7 @@ class FormatDate implements Formatter
         }
 
         if (in_array($format, ['M', 'F'])) {
-            return $this->defaultLang->getMonth($this->calendar->month - 1);
+            return $this->defaultLang->getMonth($this->date['m'] - 1);
         }
 
         return $this->date[$format];
@@ -162,7 +152,7 @@ class FormatDate implements Formatter
         }
 
         if (in_array($format, ['D', 'l'])) {
-            return $this->defaultLang->getWeek($this->calendar->weekDay() - 1)[$format];
+            return $this->defaultLang->getWeek($this->date['w']() - 1)[$format];
         }
 
         return $this->date[$format];
@@ -189,6 +179,6 @@ class FormatDate implements Formatter
             return $this->defaultLang->getGate();
         }
 
-        return self::formatNumberToLanguage($this->date[$formatChar], $this->defaultLang);
+        return $this->formatNumber($formatChar == 'w' ? $this->date[$formatChar]() : $this->date[$formatChar], $this->defaultLang);
     }
 }

@@ -2,8 +2,13 @@
 
 namespace Dipesh\NepaliDate\Services;
 
+use Dipesh\NepaliDate\Concerns\HasDateOperation;
+use Dipesh\NepaliDate\Contracts\DaysCalculator;
+use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
 use Dipesh\NepaliDate\lang\English;
+use Dipesh\NepaliDate\lang\Nepali;
+use Dipesh\NepaliDate\Services\DaysCalculator as ServicesDaysCalculator;
 use Exception;
 
 /**
@@ -13,6 +18,7 @@ use Exception;
  */
 class Date implements \Dipesh\NepaliDate\Contracts\Date
 {
+    use HasDateOperation;
     /**
      * @var string $date The formatted date string (e.g., "2078/01/01").
      */
@@ -34,15 +40,30 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     public int $year;
 
     /**
-     * @var int $weekDay The weekday component of the date.
+     * @var Language $language The language used for formatting date components.
      */
-    public int $weekDay;
+    public Language $language;
 
     /**
-     * @var Language $formattingLanguage The language used for formatting date components.
+     * @var DaysCalculator $daysCalculator The daysCalculator used for calculate days from BS table
      */
-    public Language $formattingLanguage;
+    public DaysCalculator $daysCalculator;
 
+    /**
+     * @var Formatter $formatter The formatter used for formatting date
+     */
+    public Formatter $formatter;
+
+    /**
+     * @throws Exception
+     */
+    public function __construct(string $date, Language $language)
+    {
+        $this->language = $this->resolveLanguage($language);
+        $this->daysCalculator = new ServicesDaysCalculator();
+        $this->formatter = new FormatDate();
+        $this->setUp($date);
+    }
 
     /**
      * Sets up the date object by parsing and validating the provided date string.
@@ -64,7 +85,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      * @return array An array containing year, month, and day.
      * @throws Exception If the date string is in an invalid format.
      */
-    public static function validateDateAndGetComponents(string $date): array
+    private static function validateDateAndGetComponents(string $date): array
     {
         preg_match_all("/\d+/", $date, $matches);
 
@@ -82,7 +103,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function day(): int|string
     {
-        return FormatDate::formatNumberToLanguage($this->day, $this->formattingLanguage);
+        return $this->formatter->formatNumber($this->day, $this->language);
     }
 
     /**
@@ -92,7 +113,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function month(): int|string
     {
-        return FormatDate::formatNumberToLanguage($this->month, $this->formattingLanguage);
+        return $this->formatter->formatNumber($this->month, $this->language);
     }
 
     /**
@@ -102,6 +123,45 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function year(): int|string
     {
-        return FormatDate::formatNumberToLanguage($this->year, $this->formattingLanguage);
+        return $this->formatter->formatNumber($this->year, $this->language);
+    }
+
+    /**
+     * Resolve Language Instance
+     *
+     * Resolves the provided language code or instance to a Language object.
+     *
+     * @param string|Language $language  The language code ('np' for Nepali, 'en' for English) or Language instance.
+     * @return Language
+     * @throws Exception  If an unsupported language type is provided.
+     */
+    public function resolveLanguage(string|Language $language): Language
+    {
+        return match(true) {
+            $language instanceof Language => $language,
+            $language === 'np' => new Nepali(),
+            $language === 'en' => new English(),
+            default => throw new Exception("The specified language type is not supported."),
+        };
+    }
+
+    /**
+     * Format Nepali Date
+     *
+     * Formats the Nepali date according to the specified format string and language.
+     *
+     * @param string $format The format string.
+     * @param string|Language|null $lang The language code or Language instance. Defaults to the current language.
+     * @param Formatter|null $formatter The formatter instance used for formatting the date.
+     * @return string
+     * @throws Exception
+     */
+    public function format(string $format, string|Language $lang = null, Formatter $formatter = null): string
+    {
+        if ($formatter) {
+            return $formatter($format, $this, $lang ? $this->resolveLanguage($lang) : $this->language);
+
+        }
+        return $this->formatter->__invoke($format, $this, $lang ? $this->resolveLanguage($lang) : $this->language);
     }
 }

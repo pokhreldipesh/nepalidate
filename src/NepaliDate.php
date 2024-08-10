@@ -6,15 +6,9 @@ use Carbon\Carbon;
 use Dipesh\NepaliDate\Concerns\HasDateConversion;
 use Dipesh\NepaliDate\Concerns\HasDateComparison;
 use Dipesh\NepaliDate\Concerns\HasDateManipulation;
-use Dipesh\NepaliDate\Concerns\HasDateOperation;
-use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
-use Dipesh\NepaliDate\Contracts\DaysCalculator;
 use Dipesh\NepaliDate\lang\English;
-use Dipesh\NepaliDate\lang\Nepali;
 use Dipesh\NepaliDate\Services\Date;
-use Dipesh\NepaliDate\Services\FormatDate;
-use Dipesh\NepaliDate\Services\DaysCalculator as ServicesDaysCalculator;
 use Exception;
 
 /**
@@ -27,12 +21,7 @@ use Exception;
  */
 class NepaliDate extends Date
 {
-    use HasDateConversion, HasDateManipulation, HasDateComparison, HasDateOperation;
-
-    /**
-     * @var DaysCalculator
-     */
-    public DaysCalculator $daysCalculator;
+    use HasDateConversion, HasDateManipulation, HasDateComparison;
 
     /**
      * NepaliDate Constructor
@@ -47,11 +36,7 @@ class NepaliDate extends Date
      */
     public function __construct(string $date = null, Language $language = new English())
     {
-        $this->formattingLanguage = $language;
-        $this->daysCalculator = new ServicesDaysCalculator();
-
-        $date = $date ?? self::now();
-        $this->setUp($date);
+        parent::__construct($date ?? self::now(), $language);
     }
 
     /**
@@ -78,10 +63,10 @@ class NepaliDate extends Date
      */
     public function create(string $date): static
     {
-        $instance = clone $this;
-        $instance->setUp($date);
+        $newDateInstance = clone $this;
+        $newDateInstance->setUp($date);
 
-        return $instance;
+        return $newDateInstance;
     }
 
     /**
@@ -111,44 +96,9 @@ class NepaliDate extends Date
     public function setLang(string|Language $language): static
     {
         $instance = clone $this;
-        $instance->formattingLanguage = $this->resolveLanguage($language);
+        $instance->language = $this->resolveLanguage($language);
 
         return $instance;
-    }
-
-    /**
-     * Resolve Language Instance
-     *
-     * Resolves the provided language code or instance to a Language object.
-     *
-     * @param string|Language $language  The language code ('np' for Nepali, 'en' for English) or Language instance.
-     * @return Language
-     * @throws Exception  If an unsupported language type is provided.
-     */
-    private function resolveLanguage(string|Language $language): Language
-    {
-        return match(true) {
-            $language instanceof Language => $language,
-            $language === 'np' => new Nepali(),
-            $language === 'en' => new English(),
-            default => throw new Exception("The specified language type is not supported."),
-        };
-    }
-
-    /**
-     * Format Nepali Date
-     *
-     * Formats the Nepali date according to the specified format string and language.
-     *
-     * @param string $format  The format string.
-     * @param Formatter $formatter  The formatter instance used for formatting the date.
-     * @param string|Language|null $lang  The language code or Language instance. Defaults to the current language.
-     * @return string
-     * @throws Exception
-     */
-    public function format(string $format, Formatter $formatter = new FormatDate(), string|Language $lang = null): string
-    {
-        return $formatter->setUp(calendar: $this, lang: $lang ? $this->resolveLanguage($lang) : $this->formattingLanguage)->format($format);
     }
 
     /**
