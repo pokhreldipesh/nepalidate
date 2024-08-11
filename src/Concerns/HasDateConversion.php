@@ -7,6 +7,7 @@ use Exception;
 
 trait HasDateConversion
 {
+    use HasCalenderLookupTable;
     /**
      * Convert the current Nepali date instance to its equivalent AD (Gregorian) date.
      *

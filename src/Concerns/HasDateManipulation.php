@@ -6,8 +6,6 @@ use Exception;
 
 trait HasDateManipulation
 {
-    use HasCalenderLookupTable;
-
     /**
      * Add a specified number of days to the current date instance.
      *
