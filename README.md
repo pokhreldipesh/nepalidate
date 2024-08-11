@@ -96,6 +96,16 @@ $date->format("Y-m-d, M d g l") // २०५०-१०-२८, माघ २८ 
 $date->format("Y-m-d, M d g l", 'np')
 ```
 
+## Recommended Package for Full Calendar System
+
+For developers looking to create a comprehensive calendar system, we recommend the **dipesh/calendar** package. This package provides an easy-to-use interface for managing a full Nepali calendar, allowing you to seamlessly add events, navigate through months and years, and much more.
+
+To install the package, run:
+
+```bash
+composer require dipesh/calendar
+```
+
 ## License
 
 Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT).

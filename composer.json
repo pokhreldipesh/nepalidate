@@ -1,6 +1,6 @@
 {
     "name": "dipesh/nepali-date",
-    "description": "The Nepali Date package is designed for working with the Nepali calendar.",
+    "description": "The Nepali Date package is designed for working with the Nepali calendar. It provides functionality for converting dates between the English (AD) and Nepali (BS) calendars, along with a wide range of methods for handling and manipulating Nepali dates. This comprehensive tool facilitates seamless integration and operations within the Nepali calendar system.",
     "type": "library",
     "keywords": ["date", "nepali", "nepali date", "date converter", "nepali date converter"],
     "license": "MIT",
