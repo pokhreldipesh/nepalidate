@@ -2,7 +2,7 @@
 
 namespace Dipesh\NepaliDate\Services;
 
-use Dipesh\NepaliDate\Contracts\Date as DateAlias;
+use Dipesh\NepaliDate\Contracts\Date;
 use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
 use Exception;
@@ -29,33 +29,22 @@ class FormatDate implements Formatter
      */
     protected Language $defaultLang;
 
-    /**
-     * @throws Exception
-     */
-    public function __invoke(string $format, DateAlias $date, Language $lang): string
-    {
-        $this->setUp($date, $lang);
-
-        return $this->format($format);
-    }
 
     /**
      * Set up the formatter with a specific date and language.
      *
      * @param Date $date
-     * @param Language $lang The language to use for formatting.
      * @return static
      */
-    public function setUp(DateAlias $date, Language $lang): static
+    public function setUp(Date $date): static
     {
-        $this->defaultLang = $lang;
-
-        $this->date = array_combine($this->date, [
-            $date->year,
-            $date->month,
-            $date->day,
-            fn()=> $date->weekDay()
-        ]);
+        $this->defaultLang = $date->language;
+        $this->date = [
+            'Y' => $date->year,
+            'm' => $date->month,
+            'd' => $date->day,
+            'w' => fn() =>$date->weekDay
+        ];
 
         return $this;
     }
@@ -67,7 +56,7 @@ class FormatDate implements Formatter
      * @return string
      * @throws Exception If the format string contains unsupported characters.
      */
-    public function format(string $format = 'Y/m/d'): string
+    public function format(string $format): string
     {
         $this->validateSupportedFormats($format);
 
@@ -86,13 +75,12 @@ class FormatDate implements Formatter
      * Converts numbers to the appropriate language-specific digits.
      *
      * @param int $number The number to convert.
-     * @param Language $language The language to use for conversion.
      * @return string
      */
-    public function formatNumber(int $number, Language $language): string
+    public function formatNumber(int $number): string
     {
-        return preg_replace_callback("/\d/m", function ($matches) use ($language) {
-            return $language->getDigit($matches[0]);
+        return preg_replace_callback("/\d/m", function ($matches) {
+            return $this->defaultLang->getDigit($matches[0]);
         }, (string)$number);
     }
 
@@ -133,7 +121,7 @@ class FormatDate implements Formatter
             return $this->defaultLang->getMonth($this->date['m'] - 1);
         }
 
-        return $this->date[$format];
+        return $this->formatNumber($this->date[$format]);
     }
 
     /**
@@ -143,7 +131,7 @@ class FormatDate implements Formatter
      * @return mixed
      * @throws Exception If the provided weekday format is not supported.
      */
-    private function formatWeekDay(string $format = 'w'): mixed
+    public function formatWeekDay(string $format = 'w'): mixed
     {
         $supportedDayFormats = ['w', 'D', 'l'];
 
@@ -155,7 +143,7 @@ class FormatDate implements Formatter
             return $this->defaultLang->getWeek($this->date['w']() - 1)[$format];
         }
 
-        return $this->date[$format];
+        return $this->formatNumber($this->date[$format]());
     }
 
     /**
@@ -167,11 +155,11 @@ class FormatDate implements Formatter
      */
     private function processFormatChar(string $formatChar): string
     {
-        if (in_array($formatChar, ['D', 'l'])) {
+        if (in_array($formatChar, ['D', 'l', 'w'])) {
             return $this->formatWeekDay($formatChar);
         }
 
-        if (in_array($formatChar, ['M', 'F'])) {
+        if (in_array($formatChar, ['m', 'M', 'F'])) {
             return $this->formatMonth($formatChar);
         }
 
@@ -179,6 +167,6 @@ class FormatDate implements Formatter
             return $this->defaultLang->getGate();
         }
 
-        return $this->formatNumber($formatChar == 'w' ? $this->date[$formatChar]() : $this->date[$formatChar], $this->defaultLang);
+        return $this->formatNumber( $this->date[$formatChar]);
     }
 }

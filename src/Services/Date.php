@@ -14,8 +14,10 @@ use Exception;
 /**
  * Class Date
  *
+ * @property int $weekDay
  * Represents a Nepali Date object, providing methods to manipulate and retrieve date components.
  */
+
 class Date implements \Dipesh\NepaliDate\Contracts\Date
 {
     use HasDateOperation;
@@ -55,13 +57,24 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     public Formatter $formatter;
 
     /**
-     * @throws Exception
+     * Constructor for initializing the date object with a specific date and language.
+     *
+     * @param string $date The date to initialize the date object.
+     * @param Language $language An instance of the Language class used to configure language-specific settings.
+     * @throws Exception If the date setup fails or an invalid date is provided.
      */
     public function __construct(string $date, Language $language)
     {
+        // Set the language configuration based on the provided Language instance.
         $this->language = $this->resolveLanguage($language);
-        $this->daysCalculator = new ServicesDaysCalculator();
-        $this->formatter = new FormatDate();
+
+        // Initialize the days calculator, which will be used for date-related calculations throughout the object.
+        $this->daysCalculator = $this->getDaysCalculator();
+
+        // Initialize the formatter, which will handle the formatting of dates based on the language and date settings.
+        $this->formatter = $this->getFormatter();
+
+        // Set up the date object with the provided date. This setup might be called from other parts of the code if needed.
         $this->setUp($date);
     }
 
@@ -76,6 +89,56 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     {
         [$this->year, $this->month, $this->day] = self::validateDateAndGetComponents($date);
         $this->date = implode("/", [$this->year, $this->month, $this->day]);
+        $this->formatter->setUp($this);
+    }
+
+    /**
+     * Retrieve a formatter instance for formatting dates.
+     *
+     * This method returns a new instance of the Formatter class,
+     * which provides various options for formatting dates according
+     * to the Nepali calendar and language settings.
+     *
+     * @return Formatter An instance of the FormatDate class for date formatting.
+     */
+    public function getFormatter(): Formatter
+    {
+        return new FormatDate();
+    }
+
+    /**
+     * Retrieve a days calculator for date calculation in the BS calendar.
+     *
+     * This method returns an instance of the DaysCalculator class,
+     * which contains logic specific to calculating days within the
+     * Bikram Sambat (BS) calendar system.
+     *
+     * @return DaysCalculator An instance of ServicesDaysCalculator for date calculations.
+     */
+    public function getDaysCalculator(): DaysCalculator
+    {
+        return new ServicesDaysCalculator();
+    }
+
+    /**
+     * Magic method for lazy loading the `weekDay` property.
+     *
+     * This method is triggered when accessing the `weekDay` property on
+     * the object. If the `weekDay` property is requested, it calculates
+     * the weekday based on the total days from the base date. This
+     * approach is used to optimize performance by deferring the calculation
+     * until the property is actually needed.
+     *
+     * @param string $name The name of the property being accessed.
+     * @return int The value of the requested property.
+     * @throws Exception If the property does not exist or is not accessible.
+     */
+    public function __get(string $name): int
+    {
+        if ($name === 'weekDay') {
+            return $this->daysCalculator->weekDay($this->getTotalDaysFromBaseDate($this->date));
+        }
+        throw new Exception("Undefined property {$name}");
     }
 
     /**
@@ -103,17 +166,19 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function day(): int|string
     {
-        return $this->formatter->formatNumber($this->day, $this->language);
+        return $this->formatter->formatNumber($this->day);
     }
 
     /**
      * Retrieves the month component, formatted according to the language.
      *
+     * @param string $format
      * @return int|string The month component, formatted in the specified language.
+     * @throws Exception
      */
-    public function month(): int|string
+    public function month(string $format = 'm'): int|string
     {
-        return $this->formatter->formatNumber($this->month, $this->language);
+        return $this->formatter->formatMonth($format);
     }
 
     /**
@@ -123,7 +188,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function year(): int|string
     {
-        return $this->formatter->formatNumber($this->year, $this->language);
+        return $this->formatter->formatNumber($this->year);
     }
 
     /**
@@ -152,16 +217,14 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      *
      * @param string $format The format string.
      * @param string|Language|null $lang The language code or Language instance. Defaults to the current language.
-     * @param Formatter|null $formatter The formatter instance used for formatting the date.
      * @return string
      * @throws Exception
      */
-    public function format(string $format, string|Language $lang = null, Formatter $formatter = null): string
+    public function format(string $format = 'Y/m/d', string|Language $lang = null): string
     {
-        if ($formatter) {
-            return $formatter($format, $this, $lang ? $this->resolveLanguage($lang) : $this->language);
-
+        if ($lang) {
+            $this->language = $this->resolveLanguage($lang);
         }
-        return $this->formatter->__invoke($format, $this, $lang ? $this->resolveLanguage($lang) : $this->language);
+        return $this->formatter->format($format);
     }
 }

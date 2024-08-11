@@ -50,11 +50,12 @@ trait HasDateOperation
      * This method calculates the day of the week for the current date using modular arithmetic,
      * returning a value from 1 (Sunday) to 7 (Saturday).
      *
-     * @return int               The day of the week (1 for Sunday, 7 for Saturday).
-     * @throws Exception         If any error occurs during calculation.
+     * @param string $format
+     * @return int|string The day of the week (1 for Sunday, 7 for Saturday) or in formatted form.
+     * @throws Exception If any error occurs during calculation.
      */
-    public function weekDay(): int
+    public function weekDay(string $format="w"): int|string
     {
-        return $this->daysCalculator->weekDay($this->getTotalDaysFromBaseDate($this->date));
+        return $this->formatter->formatWeekDay($format);
     }
 }

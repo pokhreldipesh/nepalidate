@@ -2,7 +2,9 @@
 namespace Dipesh\NepaliDate\Contracts;
 interface Formatter
 {
-    public function __invoke(string $format, Date $date, Language $lang): string;
-    public function formatNumber(int $number, Language $language): string;
-
+    public function setUp(Date $date): static;
+    public function format(string $format): string;
+    public function formatNumber(int $number): string;
+    public function formatMonth(string $format = 'm'): mixed;
+    public function formatWeekDay(string $format = 'w'): mixed;
 }
