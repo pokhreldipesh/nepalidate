@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php">
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory>src</directory> <!-- Adjust to your source code directory -->
+        </include>
+        <exclude>
+            <directory>tests</directory>
+            <file>vendor/autoload.php</file>
+        </exclude>
+    </coverage>
+</phpunit>

@@ -8,6 +8,7 @@ use Exception;
 trait HasDateConversion
 {
     use HasCalenderLookupTable;
+
     /**
      * Convert the current Nepali date instance to its equivalent AD (Gregorian) date.
      *
@@ -15,6 +16,7 @@ trait HasDateConversion
      * from a base AD date to the current Nepali date. The result is returned as a Carbon instance.
      *
      * @return Carbon Returns a Carbon instance representing the equivalent AD date.
+     *
      * @throws Exception If an error occurs during the conversion process.
      */
     public function toAd(): Carbon
@@ -31,8 +33,9 @@ trait HasDateConversion
      * by determining the difference in days from a base AD date and applying this to the
      * base Nepali date. The resulting Nepali date is returned as an instance of the calling class.
      *
-     * @param string $date The AD date to be converted, provided as a string.
+     * @param  string  $date  The AD date to be converted, provided as a string.
      * @return static Returns an instance of the calling class representing the equivalent Nepali date.
+     *
      * @throws Exception If an invalid date is provided or if any error occurs during the conversion.
      */
     public static function fromADDate(string $date): static

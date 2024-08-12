@@ -15,26 +15,22 @@ use Exception;
 class FormatDate implements Formatter
 {
     /**
-     * @var array $date Stores the date components like year, month, day, and weekday.
+     * @var array Stores the date components like year, month, day, and weekday.
      */
     private array $date = ['Y', 'm', 'd', 'w'];
 
     /**
-     * @var array $supportedFormats List of supported date format characters.
+     * @var array List of supported date format characters.
      */
     protected array $supportedFormats = ['Y', 'm', 'M', 'F', 'd', 'w', 'D', 'l', 'g'];
 
     /**
-     * @var Language $defaultLang The language used for formatting.
+     * @var Language The language used for formatting.
      */
     protected Language $defaultLang;
 
-
     /**
      * Set up the formatter with a specific date and language.
-     *
-     * @param Date $date
-     * @return static
      */
     public function setUp(Date $date): static
     {
@@ -43,7 +39,7 @@ class FormatDate implements Formatter
             'Y' => $date->year,
             'm' => $date->month,
             'd' => $date->day,
-            'w' => fn() =>$date->weekDay
+            'w' => fn () => $date->weekDay,
         ];
 
         return $this;
@@ -52,8 +48,8 @@ class FormatDate implements Formatter
     /**
      * Formats the date according to the provided format string.
      *
-     * @param string $format The format string (e.g., 'Y/m/d').
-     * @return string
+     * @param  string  $format  The format string (e.g., 'Y/m/d').
+     *
      * @throws Exception If the format string contains unsupported characters.
      */
     public function format(string $format): string
@@ -74,20 +70,20 @@ class FormatDate implements Formatter
     /**
      * Converts numbers to the appropriate language-specific digits.
      *
-     * @param int $number The number to convert.
-     * @return string
+     * @param  int  $number  The number to convert.
      */
     public function formatNumber(int $number): string
     {
         return preg_replace_callback("/\d/m", function ($matches) {
             return $this->defaultLang->getDigit($matches[0]);
-        }, (string)$number);
+        }, (string) $number);
     }
 
     /**
      * Validates if the provided format string contains only supported formats.
      *
-     * @param string $format The format string to validate.
+     * @param  string  $format  The format string to validate.
+     *
      * @throws Exception If the format string contains unsupported formats.
      */
     private function validateSupportedFormats(string $format): void
@@ -97,7 +93,7 @@ class FormatDate implements Formatter
         $formatsInString = array_filter($matches[0]);
         $unsupportedFormats = array_diff($formatsInString, $this->supportedFormats);
 
-        if (!empty($unsupportedFormats)) {
+        if (! empty($unsupportedFormats)) {
             throw new Exception('Invalid date format');
         }
     }
@@ -105,15 +101,15 @@ class FormatDate implements Formatter
     /**
      * Formats the month according to the provided format character.
      *
-     * @param string $format The month format character ('m', 'M', or 'F').
-     * @return mixed
+     * @param  string  $format  The month format character ('m', 'M', or 'F').
+     *
      * @throws Exception If the provided month format is not supported.
      */
     public function formatMonth(string $format = 'm'): mixed
     {
         $supportedMonthFormats = ['m', 'M', 'F'];
 
-        if (!in_array($format, $supportedMonthFormats)) {
+        if (! in_array($format, $supportedMonthFormats)) {
             throw new Exception('Unsupported month format. Please use "m", "M", or "F".');
         }
 
@@ -127,15 +123,15 @@ class FormatDate implements Formatter
     /**
      * Formats the weekday according to the provided format character.
      *
-     * @param string $format The weekday format character ('w', 'D', or 'l').
-     * @return mixed
+     * @param  string  $format  The weekday format character ('w', 'D', or 'l').
+     *
      * @throws Exception If the provided weekday format is not supported.
      */
     public function formatWeekDay(string $format = 'w'): mixed
     {
         $supportedDayFormats = ['w', 'D', 'l'];
 
-        if (!in_array($format, $supportedDayFormats)) {
+        if (! in_array($format, $supportedDayFormats)) {
             throw new Exception('Unsupported day format. Please use "w", "D", or "l".');
         }
 
@@ -149,8 +145,8 @@ class FormatDate implements Formatter
     /**
      * Processes the given format character and returns the formatted value.
      *
-     * @param string $formatChar The format character to process.
-     * @return string
+     * @param  string  $formatChar  The format character to process.
+     *
      * @throws Exception
      */
     private function processFormatChar(string $formatChar): string
@@ -167,6 +163,6 @@ class FormatDate implements Formatter
             return $this->defaultLang->getGate();
         }
 
-        return $this->formatNumber( $this->date[$formatChar]);
+        return $this->formatNumber($this->date[$formatChar]);
     }
 }

@@ -17,18 +17,19 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
      * the days up to the provided year, month, and day. It provides an efficient way to convert
      * a specific date into a cumulative day count.
      *
-     * @param int $year The year component of the date.
-     * @param int $month The month component of the date (1-12).
-     * @param int $day The day component of the date (1-32, depending on the month).
-     * @return int       The total number of days from the beginning of the BS calendar to the given date.
+     * @param  int  $year  The year component of the date.
+     * @param  int  $month  The month component of the date (1-12).
+     * @param  int  $day  The day component of the date (1-32, depending on the month).
+     * @return int The total number of days from the beginning of the BS calendar to the given date.
+     *
      * @throws Exception
      */
     public function getDays(int $year, int $month, int $day): int
     {
         $totalDays = 0;
 
-        if (!isset(self::$bs[$year])) {
-            throw new InvalidDateRangeException();
+        if (! isset(self::$bs[$year])) {
+            throw new InvalidDateRangeException;
         }
 
         foreach (self::$bs as $y => $months) {
@@ -49,9 +50,10 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
      * This method is useful for date calculations where a specific number of days need to be added to a base date.
      * It iterates through the calendar years and months, accumulating days until the target date is reached.
      *
-     * @param int $totalDays The total number of days to be added.
-     * @return string        The calculated date in "YYYY/MM/DD" format.
-     * @throws Exception     If the number of days exceeds the available range in the BS calendar.
+     * @param  int  $totalDays  The total number of days to be added.
+     * @return string The calculated date in "YYYY/MM/DD" format.
+     *
+     * @throws Exception If the number of days exceeds the available range in the BS calendar.
      */
     public function getDateFromDays(int $totalDays): string
     {
@@ -69,7 +71,8 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
                         $finalYear = $year;
                         $finalMonth = $monthIndex + 1;
                         $finalDay = $totalDays - $accumulatedDays;
-                        return sprintf("%04d/%02d/%02d", $finalYear, $finalMonth, $finalDay);
+
+                        return sprintf('%04d/%02d/%02d', $finalYear, $finalMonth, $finalDay);
                     }
                     $accumulatedDays += $monthDays;
                 }
@@ -78,7 +81,7 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
             }
         }
 
-        throw new InvalidDateRangeException();
+        throw new InvalidDateRangeException;
     }
 
     /**we
@@ -92,14 +95,15 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
      * @param int $days The number of days to calculate the weekday for.
      * @return int The weekday corresponding to the given number of days (1 for Sunday, 7 for Saturday).
      */
-    public function getWeekDayFromDays(int $days):int
+    public function getWeekDayFromDays(int $days): int
     {
         $day = $days % self::$baseWeekDay;
 
         //Calculate weekday traversing backward from base date
         if ($day < 0) {
-            $day = $day+7;
+            $day = $day + 7;
         }
+
         return $day == 0 ? 7 : $day;
     }
 }

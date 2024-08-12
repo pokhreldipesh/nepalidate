@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/autoload.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.3/phpunit.xsd" cacheDirectory=".phpunit.cache">
+  <source>
+    <include>
+      <directory>src</directory>
+      <!-- Adjust to your source code directory -->
+    </include>
+    <exclude>
+      <directory>tests</directory>
+      <file>vendor/autoload.php</file>
+    </exclude>
+  </source>
+</phpunit>

@@ -111,8 +111,6 @@ trait HasCalenderLookupTable
      *
      * This property sets the base English date ('YYYY/MM/DD') that corresponds to a specific Nepali date.
      * It is used as a reference point for conversions between English and Nepali dates.
-     *
-     * @var string
      */
     public static string $baseEnglishDate = '1944/01/01';
 
@@ -121,8 +119,6 @@ trait HasCalenderLookupTable
      *
      * This property defines the weekday of the base English date (1 for Sunday, 7 for Saturday).
      * It helps in calculating the corresponding weekday for Nepali dates.
-     *
-     * @var int
      */
     public static int $baseWeekDay = 7;
 
@@ -131,8 +127,6 @@ trait HasCalenderLookupTable
      *
      * This property sets the equivalent Nepali date ('YYYY/MM/DD') that corresponds to the base English date.
      * It is used as a reference point for conversions between English and Nepali dates.
-     *
-     * @var string
      */
     public static string $equivalentNepaliDate = '2000/09/17';
 }
