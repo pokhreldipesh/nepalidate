@@ -1,0 +1,58 @@
+name: CI
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: ['8.0', '8.1', '8.2', '8.3'] # Specify the PHP versions for unit tests
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, intl, xdebug
+          coverage: xdebug  # Enable Xdebug coverage
+
+      - name: Clear Composer Cache
+        run: composer clear-cache
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-dev --no-progress --no-suggest --ansi --ignore-platform-req=php
+        env:
+          COMPOSER_ALLOW_SUPERUSER: 1
+
+      - name: Install PHP version specific tools
+        run: |
+          if [ "${{ matrix.php-version }}" = "8.0" ]; then
+            composer require --dev laravel/pint:^1.5 phpunit/phpunit:^9.6 --no-update
+          elif [ "${{ matrix.php-version }}" = "8.1" ] || [ "${{ matrix.php-version }}" = "8.2" ] || [ "${{ matrix.php-version }}" = "8.3" ]; then
+            composer require --dev laravel/pint:^1.17 phpunit/phpunit:^10.5 --no-update
+          fi
+          composer update --no-progress --no-suggest --ansi
+
+        env:
+          COMPOSER_ALLOW_SUPERUSER: 1
+
+      - name: Verify installed packages
+        run: composer show --installed
+
+      - name: Verify PHPUnit installation
+        run: ls -la vendor/bin
+
+      - name: Run PHPUnit
+        run: |
+          if [ "${{ matrix.php-version }}" = "8.0" ]; then
+            vendor/bin/phpunit --configuration phpunit9.xml tests --coverage-text
+          else
+            vendor/bin/phpunit --configuration phpunit.xml tests --coverage-text
+          fi
+
+      - name: Run Pint (Laravel Pint)
+        run: vendor/bin/pint --config pint.json --test

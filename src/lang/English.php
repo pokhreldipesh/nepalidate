@@ -8,7 +8,7 @@ class English implements Language
 {
     public static string $gate = 'Gate';
 
-    public static array $digits =  [
+    public static array $digits = [
         '0',
         '1',
         '2',
@@ -20,6 +20,7 @@ class English implements Language
         '8',
         '9',
     ];
+
     public static array $weeks = [
         [
             'l' => 'Aaitabar',
@@ -54,51 +55,51 @@ class English implements Language
     public static array $months = [
         [
             'F' => 'Baishakh',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Jestha',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Ashar',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Shrawan',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Bhadra',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Ashoj',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Kartik',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Mangshir',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Poush',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Magh',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Falgun',
-            'M' => ''
+            'M' => '',
         ],
         [
             'F' => 'Chaitra',
-            'M' => ''
+            'M' => '',
         ],
     ];
 

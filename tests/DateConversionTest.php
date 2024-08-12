@@ -11,17 +11,17 @@ class DateConversionTest extends TestCase
 
     public function setUp(): void
     {
-        $this->date = new NepaliDate();
+        $this->date = new NepaliDate;
     }
 
     public function testToAd()
     {
-        $this->assertSame((new \DateTime())->format("Y-m-d"), $this->date->toAd()->format("Y-m-d"));
+        $this->assertSame((new \DateTime)->format('Y-m-d'), $this->date->toAd()->format('Y-m-d'));
     }
 
     public function testFromAd()
     {
-        $this->assertSame($this->date->format("Y-m-d"), $this->date::fromADDate((new \DateTime())->format("Y-m-d"))->format("Y-m-d"));
+        $this->assertSame($this->date->format('Y-m-d'), $this->date::fromADDate((new \DateTime)->format('Y-m-d'))->format('Y-m-d'));
     }
 
     public function testPerformTruthValidation()
@@ -38,5 +38,4 @@ class DateConversionTest extends TestCase
             $this->assertEquals($bs, $this->date::fromADDate($ad)->format('Y/m/d'));
         }
     }
-
 }

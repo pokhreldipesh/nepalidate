@@ -27,5 +27,9 @@
     "require-dev": {
         "laravel/pint": "^1.17",
         "phpunit/phpunit": "^11.3"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit tests --colors",
+        "lint": "vendor/bin/pint"
     }
 }

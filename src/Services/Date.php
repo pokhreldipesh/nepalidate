@@ -14,53 +14,53 @@ use Exception;
 /**
  * Class Date
  *
- * @property int $weekDay
- * Represents a Nepali Date object, providing methods to manipulate and retrieve date components.
+ * @property int $weekDay Represents a Nepali Date object, providing methods to manipulate and retrieve date components.
  */
-
 class Date implements \Dipesh\NepaliDate\Contracts\Date
 {
     use HasDateOperation;
+
     /**
-     * @var string $date The formatted date string (e.g., "2078/01/01").
+     * @var string The formatted date string (e.g., "2078/01/01").
      */
     public string $date;
 
     /**
-     * @var int $day The day component of the date.
+     * @var int The day component of the date.
      */
     public int $day;
 
     /**
-     * @var int $month The month component of the date.
+     * @var int The month component of the date.
      */
     public int $month;
 
     /**
-     * @var int $year The year component of the date.
+     * @var int The year component of the date.
      */
     public int $year;
 
     /**
-     * @var Language $language The language used for formatting date components.
+     * @var Language The language used for formatting date components.
      */
     public Language $language;
 
     /**
-     * @var DateProcessor $dateProcessor The daysCalculator used for calculate days from BS table
+     * @var DateProcessor The daysCalculator used for calculate days from BS table
      */
     public DateProcessor $dateProcessor;
 
     /**
-     * @var Formatter $formatter The formatter used for formatting date
+     * @var Formatter The formatter used for formatting date
      */
     public Formatter $formatter;
 
     /**
      * Constructor for initializing the date object with a specific date and language.
      *
-     * @param string $date The date to initialize the date object.
-     * @param Language $language An instance of the Language class used to configure language-specific settings.
+     * @param  string  $date  The date to initialize the date object.
+     * @param  Language  $language  An instance of the Language class used to configure language-specific settings.
+     *
      * @throws Exception If the date setup fails or an invalid date is provided.
      */
     public function __construct(string $date, Language $language)
@@ -81,14 +81,14 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     /**
      * Sets up the date object by parsing and validating the provided date string.
      *
-     * @param string $date The date string to set up (e.g., "2078/01/01").
-     * @return void
+     * @param  string  $date  The date string to set up (e.g., "2078/01/01").
+     *
      * @throws Exception If the date format is invalid.
      */
     public function setUp(string $date): void
     {
         [$this->year, $this->month, $this->day] = self::validateDateAndGetComponents($date);
-        $this->date = implode("/", [$this->year, $this->month, $this->day]);
+        $this->date = implode('/', [$this->year, $this->month, $this->day]);
         $this->formatter->setUp($this);
     }
 
@@ -103,7 +103,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function getFormatter(): Formatter
     {
-        return new FormatDate();
+        return new FormatDate;
     }
 
     /**
@@ -117,7 +117,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public function getDateProcessor(): DateProcessor
     {
-        return new serviceDateProcessor();
+        return new serviceDateProcessor;
     }
 
     /**
@@ -129,8 +129,9 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      * approach is used to optimize performance by deferring the calculation
      * until the property is actually needed.
      *
-     * @param string $name The name of the property being accessed.
+     * @param  string  $name  The name of the property being accessed.
      * @return int The value of the requested property.
+     *
      * @throws Exception If the property does not exist or is not accessible.
      */
     public function __get(string $name): int
@@ -144,8 +145,9 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     /**
      * Validates the date string and returns its components as an array.
      *
-     * @param string $date The date string to validate.
+     * @param  string  $date  The date string to validate.
      * @return array An array containing year, month, and day.
+     *
      * @throws Exception If the date string is in an invalid format.
      */
     private static function validateDateAndGetComponents(string $date): array
@@ -172,8 +174,8 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     /**
      * Retrieves the month component, formatted according to the language.
      *
-     * @param string $format
      * @return int|string The month component, formatted in the specified language.
+     *
      * @throws Exception
      */
     public function month(string $format = 'm'): int|string
@@ -196,17 +198,17 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      *
      * Resolves the provided language code or instance to a Language object.
      *
-     * @param string|Language $language  The language code ('np' for Nepali, 'en' for English) or Language instance.
-     * @return Language
-     * @throws Exception  If an unsupported language type is provided.
+     * @param  string|Language  $language  The language code ('np' for Nepali, 'en' for English) or Language instance.
+     *
+     * @throws Exception If an unsupported language type is provided.
      */
     public function resolveLanguage(string|Language $language): Language
     {
-        return match(true) {
+        return match (true) {
             $language instanceof Language => $language,
-            $language === 'np' => new Nepali(),
-            $language === 'en' => new English(),
-            default => throw new Exception("The specified language type is not supported."),
+            $language === 'np' => new Nepali,
+            $language === 'en' => new English,
+            default => throw new Exception('The specified language type is not supported.'),
         };
     }
 
@@ -215,16 +217,17 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      *
      * Formats the Nepali date according to the specified format string and language.
      *
-     * @param string $format The format string.
-     * @param string|Language|null $lang The language code or Language instance. Defaults to the current language.
-     * @return string
+     * @param  string  $format  The format string.
+     * @param  string|Language|null  $lang  The language code or Language instance. Defaults to the current language.
+     *
      * @throws Exception
      */
-    public function format(string $format = 'Y/m/d', string|Language $lang = null): string
+    public function format(string $format = 'Y/m/d', string|Language|null $lang = null): string
     {
         if ($lang) {
             $this->language = $this->resolveLanguage($lang);
         }
+
         return $this->formatter->format($format);
     }
 }

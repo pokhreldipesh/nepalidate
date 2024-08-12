@@ -11,17 +11,17 @@ class ComparisonTest extends TestCase
 
     public function setUp(): void
     {
-        $this->date = new NepaliDate(date:"2081/4/24");
+        $this->date = new NepaliDate(date: '2081/4/24');
     }
 
     public function testAddDays()
     {
-        $this->assertSame("2081/4/28", $this->date->addDays(4)->format('Y/m/d'));
+        $this->assertSame('2081/4/28', $this->date->addDays(4)->format('Y/m/d'));
     }
 
     public function testSubDays()
     {
-        $this->assertSame("2081/4/20", $this->date->subDays(4)->format('Y/m/d'));
+        $this->assertSame('2081/4/20', $this->date->subDays(4)->format('Y/m/d'));
     }
 
     public function testIsEqual()

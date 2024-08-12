@@ -13,8 +13,9 @@ trait HasDateManipulation
      * total days since the base date. It then creates a cloned instance of the current date object with
      * the updated date.
      *
-     * @param int $day The number of days to add to the current date.
+     * @param  int  $day  The number of days to add to the current date.
      * @return static Returns a new instance of the calling class with the updated date.
+     *
      * @throws Exception If an error occurs during the date calculation or setup.
      */
     public function addDays(int $day): static
@@ -33,8 +34,9 @@ trait HasDateManipulation
      * This method subtracts the provided number of days by passing the negative value to the `addDays` method.
      * It effectively reduces the date by the given number of days and returns a new instance with the updated date.
      *
-     * @param int $day The number of days to subtract from the current date.
+     * @param  int  $day  The number of days to subtract from the current date.
      * @return static Returns a new instance of the calling class with the updated date.
+     *
      * @throws Exception If an error occurs during the date calculation or setup.
      */
     public function subDays(int $day): static
