@@ -46,13 +46,12 @@ $date->toAd(); // output Carbon date format
 //or
 $date = NepaliDate::fromADDate("1990-9-10");
 ```
-### Date Component Retrieval
+### Date Component Retrieval Based on the Language Configuration
 ```php
-$date->year();   // Retrieves the year based on the language configuration
-$date->month();  // Retrieves the month based on the language configuration
-$date->day();    // Retrieves the day based on the language configuration
-$date->weekDay(); // Retrieves the day week day
-
+$date->year();   // Retrieves the year 
+$date->month($format);  // Retrieves the formatted month 
+$date->day();    // Retrieves the day 
+$date->weekDay($format); // Retrieves the formatted week day
 ```
 ### Date Manipulation and Comparison Methods
 
