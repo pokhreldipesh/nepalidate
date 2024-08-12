@@ -6,7 +6,7 @@ use Dipesh\NepaliDate\Concerns\HasCalenderLookupTable;
 use Dipesh\NepaliDate\InvalidDateRangeException;
 use Exception;
 
-class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
+class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
 {
     use HasCalenderLookupTable;
 
@@ -23,7 +23,7 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
      * @return int       The total number of days from the beginning of the BS calendar to the given date.
      * @throws Exception
      */
-    public function totalDays(int $year, int $month, int $day): int
+    public function getDays(int $year, int $month, int $day): int
     {
         $totalDays = 0;
 
@@ -44,7 +44,7 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
     }
 
     /**
-     * Adds a given number of days to the start of the Nepali BS calendar and returns the resulting date.
+     * Calculates a date in the Nepali BS calendar based on a given number of days.
      *
      * This method is useful for date calculations where a specific number of days need to be added to a base date.
      * It iterates through the calendar years and months, accumulating days until the target date is reached.
@@ -53,7 +53,7 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
      * @return string        The calculated date in "YYYY/MM/DD" format.
      * @throws Exception     If the number of days exceeds the available range in the BS calendar.
      */
-    public function addDays(int $totalDays): string
+    public function getDateFromDays(int $totalDays): string
     {
         $accumulatedDays = 0;
 
@@ -81,7 +81,7 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
         throw new InvalidDateRangeException();
     }
 
-    /**
+    /**we
      * Calculate the corresponding weekday for a given number of days.
      *
      * This method calculates the weekday by taking the modulus of the number of days
@@ -92,7 +92,7 @@ class DaysCalculator implements \Dipesh\NepaliDate\Contracts\DaysCalculator
      * @param int $days The number of days to calculate the weekday for.
      * @return int The weekday corresponding to the given number of days (1 for Sunday, 7 for Saturday).
      */
-    public function weekDay(int $days):int
+    public function getWeekDayFromDays(int $days):int
     {
         $day = $days % self::$baseWeekDay;
 

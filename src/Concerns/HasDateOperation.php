@@ -26,7 +26,7 @@ trait HasDateOperation
         } else {
             list($year, $month, $day) = $this->validateDateAndGetComponents($date);
         }
-        return $this->daysCalculator->totalDays($year, $month, $day) - 263;
+        return $this->dateProcessor->getDays($year, $month, $day) - 263;
     }
 
     /**

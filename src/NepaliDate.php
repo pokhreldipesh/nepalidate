@@ -6,11 +6,9 @@ use Carbon\Carbon;
 use Dipesh\NepaliDate\Concerns\HasDateConversion;
 use Dipesh\NepaliDate\Concerns\HasDateComparison;
 use Dipesh\NepaliDate\Concerns\HasDateManipulation;
-use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
 use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\Services\Date;
-use Dipesh\NepaliDate\Services\FormatDate;
 use Exception;
 
 /**
@@ -100,7 +98,7 @@ class NepaliDate extends Date
         $instance = clone $this;
         $instance->language  = $this->resolveLanguage($language);
         $instance->formatter = clone $instance->formatter->setUp($instance);
-        
+
         return $instance;
     }
 

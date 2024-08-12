@@ -19,10 +19,10 @@ trait HasDateManipulation
      */
     public function addDays(int $day): static
     {
-        $totalDays = $this->daysCalculator->totalDays($this->year, $this->month, $this->day) + $day;
+        $totalDays = $this->dateProcessor->getDays($this->year, $this->month, $this->day) + $day;
 
         $cloned = clone $this;
-        $cloned->setUp($this->daysCalculator->addDays($totalDays));
+        $cloned->setUp($this->dateProcessor->getDateFromDays($totalDays));
 
         return $cloned;
     }

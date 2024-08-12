@@ -3,12 +3,12 @@
 namespace Dipesh\NepaliDate\Services;
 
 use Dipesh\NepaliDate\Concerns\HasDateOperation;
-use Dipesh\NepaliDate\Contracts\DaysCalculator;
+use Dipesh\NepaliDate\Contracts\DateProcessor;
 use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
 use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\lang\Nepali;
-use Dipesh\NepaliDate\Services\DaysCalculator as ServicesDaysCalculator;
+use Dipesh\NepaliDate\Services\DateProcessor as serviceDateProcessor;
 use Exception;
 
 /**
@@ -47,9 +47,9 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     public Language $language;
 
     /**
-     * @var DaysCalculator $daysCalculator The daysCalculator used for calculate days from BS table
+     * @var DateProcessor $dateProcessor The daysCalculator used for calculate days from BS table
      */
-    public DaysCalculator $daysCalculator;
+    public DateProcessor $dateProcessor;
 
     /**
      * @var Formatter $formatter The formatter used for formatting date
@@ -68,8 +68,8 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
         // Set the language configuration based on the provided Language instance.
         $this->language = $this->resolveLanguage($language);
 
-        // Initialize the days calculator, which will be used for date-related calculations throughout the object.
-        $this->daysCalculator = $this->getDaysCalculator();
+        // Initialize the date processor, which will be used for date-related calculations throughout the object.
+        $this->dateProcessor = $this->getDateProcessor();
 
         // Initialize the formatter, which will handle the formatting of dates based on the language and date settings.
         $this->formatter = $this->getFormatter();
@@ -107,17 +107,17 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
-     * Retrieve a days calculator for date calculation in the BS calendar.
+     * Retrieve a date processor object for date calculation from the BS calendar.
      *
-     * This method returns an instance of the DaysCalculator class,
+     * This method returns an instance of the DateProcessor class,
      * which contains logic specific to calculating days within the
      * Bikram Sambat (BS) calendar system.
      *
-     * @return DaysCalculator An instance of ServicesDaysCalculator for date calculations.
+     * @return DateProcessor An instance of serviceDateProcessor for date calculations.
      */
-    public function getDaysCalculator(): DaysCalculator
+    public function getDateProcessor(): DateProcessor
     {
-        return new ServicesDaysCalculator();
+        return new serviceDateProcessor();
     }
 
     /**
@@ -136,7 +136,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     public function __get(string $name): int
     {
         if ($name === 'weekDay') {
-            return $this->daysCalculator->weekDay($this->getTotalDaysFromBaseDate($this->date));
+            return $this->dateProcessor->getWeekDayFromDays($this->getTotalDaysFromBaseDate($this->date));
         }
         throw new Exception("Undefined property {$name}");
     }
