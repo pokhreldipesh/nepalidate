@@ -52,18 +52,54 @@ class English implements Language
     ];
 
     public static array $months = [
-        'Baishakh',
-        'Jestha',
-        'Ashar',
-        'Shrawan',
-        'Bhadra',
-        'Ashoj',
-        'Kartik',
-        'Mangshir',
-        'Poush',
-        'Magh',
-        'Falgun',
-        'Chaitra',
+        [
+            'F' => 'Baishakh',
+            'M' => ''
+        ],
+        [
+            'F' => 'Jestha',
+            'M' => ''
+        ],
+        [
+            'F' => 'Ashar',
+            'M' => ''
+        ],
+        [
+            'F' => 'Shrawan',
+            'M' => ''
+        ],
+        [
+            'F' => 'Bhadra',
+            'M' => ''
+        ],
+        [
+            'F' => 'Ashoj',
+            'M' => ''
+        ],
+        [
+            'F' => 'Kartik',
+            'M' => ''
+        ],
+        [
+            'F' => 'Mangshir',
+            'M' => ''
+        ],
+        [
+            'F' => 'Poush',
+            'M' => ''
+        ],
+        [
+            'F' => 'Magh',
+            'M' => ''
+        ],
+        [
+            'F' => 'Falgun',
+            'M' => ''
+        ],
+        [
+            'F' => 'Chaitra',
+            'M' => ''
+        ],
     ];
 
     public function getGate(): string
@@ -81,7 +117,7 @@ class English implements Language
         return self::$weeks[$week];
     }
 
-    public function getMonth(int $month): int|string
+    public function getMonth(int $month): array
     {
         return self::$months[$month];
     }

@@ -203,21 +203,25 @@ class CustomLanguage implements \Dipesh\NepaliDate\Contracts\Language
     public function getGate(): string 
     {
         // Your custom language specific gate especially useful for nepali language and you might not need this
+        // Eg: return "";
     }
     
     public function getDigit(int $digit):int|string 
     {
         // Your custom language specific digit
+        // Eg: return 1;
     }
     
     public function getWeek(int $week):array 
     {
         // Your custom language specific week day
+        // Eg: return ['l' => 'Sunday', 'D' => 'Sun'];
     }
     
-    public function getMonth(int $month):int|string 
+    public function getMonth(int $month):array 
     {
-        // Your custom language specific month
+        // Your custom language specific month 
+        // Eg: return ['F' => 'January', 'M' => 'Jan'];
     }
 }
 ```

@@ -53,18 +53,54 @@ class Nepali implements Language
     ];
 
     public static array $months = [
-        'बैसाख',
-        'जेठ',
-        'असार',
-        'श्रावन',
-        'भाद्र',
-        'असोज',
-        'कार्तिक',
-        'मंसिर',
-        'पुष',
-        'माघ',
-        'फाल्गुण',
-        'चैत्र',
+        [
+            'F' => 'बैसाख',
+            'M' => ''
+        ],
+        [
+            'F' => 'जेठ',
+            'M' => ''
+        ],
+        [
+            'F' => 'असार',
+            'M' => ''
+        ],
+        [
+            'F' => 'साउन',
+            'M' => ''
+        ],
+        [
+            'F' => 'भदौ',
+            'M' => ''
+        ],
+        [
+            'F' => 'असोज',
+            'M' => ''
+        ],
+        [
+            'F' => 'कार्तिक',
+            'M' => ''
+        ],
+        [
+            'F' => 'मंसिर',
+            'M' => ''
+        ],
+        [
+            'F' => 'पुष',
+            'M' => ''
+        ],
+        [
+            'F' => 'माघ',
+            'M' => ''
+        ],
+        [
+            'F' => 'फाल्गुण',
+            'M' => ''
+        ],
+        [
+            'F' => 'चैत',
+            'M' => ''
+        ],
     ];
 
     public function getGate(): string
@@ -82,7 +118,7 @@ class Nepali implements Language
         return self::$weeks[$week];
     }
 
-    public function getMonth(int $month): int|string
+    public function getMonth(int $month): array
     {
         return self::$months[$month];
     }

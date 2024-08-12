@@ -118,7 +118,7 @@ class FormatDate implements Formatter
         }
 
         if (in_array($format, ['M', 'F'])) {
-            return $this->defaultLang->getMonth($this->date['m'] - 1);
+            return $this->defaultLang->getMonth($this->date['m'] - 1)[$format];
         }
 
         return $this->formatNumber($this->date[$format]);
