@@ -106,6 +106,123 @@ To install the package, run:
 composer require dipesh/calendar
 ```
 
+---
+## Extending and Customizing the Nepali Date Package
+
+This package is designed for great extensibility, allowing you to customize key components to fit your specific needs. The package is built around three main concepts:
+
+1. **DateProcessor**: Handles all date-related calculations and logic.
+2. **Language**: Manages language-specific aspects, such as number formatting and month names.
+3. **Formatter**: Controls how dates are formatted and displayed.
+
+You can extend or replace these components with your own implementations, enabling you to modify the core logic without touching the existing codebase. Below are examples of how to achieve this customization:
+
+### Example: Extending the Nepali Date Class
+
+```php
+// Extending the main NepaliDate class
+class CustomDate extends \Dipesh\NepaliDate\NepaliDate
+{
+    // Your new feature implementation goes here
+
+    // Use a custom date processor for all date-related logic
+    public function getDateProcessor()
+    {
+        return new CustomDateProcessor();
+    }
+
+    // Use a custom formatter for all date formatting
+    public function getFormatter()
+    {
+        return new CustomFormatter();
+    }
+}
+```
+
+### Example: Creating a Custom DateProcessor
+
+```php
+// Implementing a custom DateProcessor
+class CustomDateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
+{
+    public function getDays(int $year, int $month, int $day): int
+    {
+        // Your custom logic for calculating days
+    }
+
+    public function getDateFromDays(int $totalDays): string
+    {
+        // Your custom logic for calculating a date from total days
+    }
+
+    public function getWeekDayFromDays(int $days): int
+    {
+        // Your custom logic for determining the weekday from days
+    }
+}
+```
+
+### Example: Creating a Custom Formatter
+
+```php
+// Implementing a custom Formatter
+class CustomFormatter implements \Dipesh\NepaliDate\Contracts\Formatter
+{
+    public function setUp(Date $date): static
+    {
+        // Setup logic with the date
+    }
+
+    public function format(string $format): string
+    {
+        // Your custom logic for formatting the date
+    }
+
+    public function formatNumber(int $number): string
+    {
+        // Your custom logic for formatting numbers
+    }
+
+    public function formatMonth(string $format = 'm'): mixed
+    {
+        // Your custom logic for formatting months
+    }
+
+    public function formatWeekDay(string $format = 'w'): mixed
+    {
+        // Your custom logic for formatting weekdays
+    }
+}
+```
+
+### Example: Creating a Custom Language
+
+```php
+// Implementing a custom language
+class CustomLanguage implements \Dipesh\NepaliDate\Contracts\Language
+{
+    public function getGate(): string 
+    {
+        // Your custom language specific gate especially useful for nepali language and you might not need this
+    }
+    
+    public function getDigit(int $digit):int|string 
+    {
+        // Your custom language specific digit
+    }
+    
+    public function getWeek(int $week):array 
+    {
+        // Your custom language specific week day
+    }
+    
+    public function getMonth(int $month):int|string 
+    {
+        // Your custom language specific month
+    }
+}
+```
+---
 ## License
 
 Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT).

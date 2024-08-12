@@ -96,7 +96,8 @@ class NepaliDate extends Date
     public function setLang(string|Language $language): static
     {
         $instance = clone $this;
-        $instance->language = $this->resolveLanguage($language);
+        $instance->language  = $this->resolveLanguage($language);
+        $instance->formatter = clone $instance->formatter->setUp($instance);
 
         return $instance;
     }
