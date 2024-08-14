@@ -5,7 +5,7 @@
 
 The Nepali Date package is designed for working with the Nepali calendar. It provides functionality for converting dates between the English (AD) and Nepali (BS) calendars, along with a wide range of methods for handling and manipulating Nepali dates. This comprehensive tool facilitates seamless integration and operations within the Nepali calendar system.
 
-## Installation 
+## Installation
 
 To install the package, use Composer:
 
@@ -24,7 +24,7 @@ $date = new NepaliDate(language: 'np or en'); // Creates current date instance w
 
 //or
 $date = $date->setLang('np') or $date->setLang(new \Dipesh\NepaliDate\lang\Nepali()) // Creates immutable instance
-                                                                        
+
 //or
 $date = new NepaliDate("2050-8-10") // Creates date instance with default language configuration
 
@@ -34,7 +34,7 @@ $date = NepaliDate::make("2070-8-20"); // Creates date instance with default lan
 //or
 $date = NepaliDate::now(); // Creates current date instance
 
-// Work with global instance 
+// Work with global instance
 $date->create($date); // Creates an immutable date instance while retaining the previous configuration settings.
 
 ```
@@ -48,9 +48,9 @@ $date = NepaliDate::fromADDate("1990-9-10");
 ```
 ### Date Component Retrieval Based on the Language Configuration
 ```php
-$date->year();   // Retrieves the year 
-$date->month($format);  // Retrieves the formatted month 
-$date->day();    // Retrieves the day 
+$date->year();   // Retrieves the year
+$date->month($format);  // Retrieves the formatted month
+$date->day();    // Retrieves the day
 $date->weekDay($format); // Retrieves the formatted week day
 ```
 ### Date Manipulation and Comparison Methods
@@ -95,9 +95,9 @@ $date->format("Y-m-d, M d g l") // २०५०-१०-२८, माघ २८ 
 $date->format("Y-m-d, M d g l", 'np')
 ```
 
-## Recommended Package for Full Calendar System
+## Recommended Package for Full [Calendar](https://github.com/pokhreldipesh/calendar) System
 
-For developers looking to create a comprehensive calendar system, we recommend the **dipesh/calendar** package. This package provides an easy-to-use interface for managing a full Nepali calendar, allowing you to seamlessly add events, navigate through months and years, and much more.
+For developers looking to create a comprehensive [Calendar](https://github.com/pokhreldipesh/calendar) system, we recommend the **dipesh/calendar** package. This package provides an easy-to-use interface for managing a full Nepali calendar, allowing you to seamlessly add events, navigate through months and years, and much more.
 
 To install the package, run:
 
@@ -200,27 +200,27 @@ class CustomFormatter implements \Dipesh\NepaliDate\Contracts\Formatter
 // Implementing a custom language
 class CustomLanguage implements \Dipesh\NepaliDate\Contracts\Language
 {
-    public function getGate(): string 
+    public function getGate(): string
     {
         // Your custom language specific gate especially useful for nepali language and you might not need this
         // Eg: return "";
     }
-    
-    public function getDigit(int $digit):int|string 
+
+    public function getDigit(int $digit):int|string
     {
         // Your custom language specific digit
         // Eg: return 1;
     }
-    
-    public function getWeek(int $week):array 
+
+    public function getWeek(int $week):array
     {
         // Your custom language specific week day
         // Eg: return ['l' => 'Sunday', 'D' => 'Sun'];
     }
-    
-    public function getMonth(int $month):array 
+
+    public function getMonth(int $month):array
     {
-        // Your custom language specific month 
+        // Your custom language specific month
         // Eg: return ['F' => 'January', 'M' => 'Jan'];
     }
 }
