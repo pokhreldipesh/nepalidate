@@ -24,18 +24,20 @@ class DateConversionTest extends TestCase
         $this->assertSame($this->date->format('Y-m-d'), $this->date::fromADDate((new \DateTime)->format('Y-m-d'))->format('Y-m-d'));
     }
 
-    public function testPerformTruthValidation()
+   #[DataProvider('ADToBSDates')
+    public function testDateConversionFromADToBS(string $AD, string $BS ): void
     {
-        $dates = [
-            '1944/1/1' => '2000/9/17',
-            '1944/10/7' => '2001/6/22',
-            '1994/1/21' => '2050/10/8',
-            '2001/7/27' => '2058/4/12',
-            '2023/1/7' => '2079/9/23',
-        ];
+        $this->assertEquals($BS, $this->date::fromADDate($AD)->format('Y/m/d'));
+    }
 
-        foreach ($dates as $ad => $bs) {
-            $this->assertEquals($bs, $this->date::fromADDate($ad)->format('Y/m/d'));
-        }
+    public static function ADToBSDates(): array
+    {
+        return [
+            ['AD' => '1944/1/1', 'BS' => '2000/9/17'],
+            ['AD' => '1944/10/7', 'BS' => '2001/6/22'],
+            ['AD' => '1994/1/21', 'BS' => '2050/10/8'],
+            ['AD' => '2001/7/27', 'BS' => '2058/4/12'],
+            ['AD' => '2023/1/7', 'BS' => '2079/9/23'],
+        ];
     }
 }
