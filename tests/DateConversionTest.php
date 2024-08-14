@@ -24,7 +24,7 @@ class DateConversionTest extends TestCase
         $this->assertSame($this->date->format('Y-m-d'), $this->date::fromADDate((new \DateTime)->format('Y-m-d'))->format('Y-m-d'));
     }
 
-    /** @dataProvider ADToBSDates */
+   #[DataProvider('ADToBSDates')
     public function testDateConversionFromADToBS(string $AD, string $BS ): void
     {
         $this->assertEquals($BS, $this->date::fromADDate($AD)->format('Y/m/d'));
