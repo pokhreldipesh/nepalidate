@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Dipesh\NepaliDate\NepaliDate;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class DateConversionTest extends TestCase
@@ -24,7 +25,7 @@ class DateConversionTest extends TestCase
         $this->assertSame($this->date->format('Y-m-d'), $this->date::fromADDate((new \DateTime)->format('Y-m-d'))->format('Y-m-d'));
     }
 
-   #[DataProvider('ADToBSDates')
+    #[DataProvider('ADToBSDates')]
     public function testDateConversionFromADToBS(string $AD, string $BS ): void
     {
         $this->assertEquals($BS, $this->date::fromADDate($AD)->format('Y/m/d'));
