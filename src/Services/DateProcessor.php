@@ -72,7 +72,7 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
                         $finalMonth = $monthIndex + 1;
                         $finalDay = $totalDays - $accumulatedDays;
 
-                        return sprintf('%04d/%02d/%02d', $finalYear, $finalMonth, $finalDay);
+                        return sprintf(Date::$defaultOutputFormat, $finalYear, $finalMonth, $finalDay);
                     }
                     $accumulatedDays += $monthDays;
                 }
