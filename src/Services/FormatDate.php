@@ -70,9 +70,9 @@ class FormatDate implements Formatter
     /**
      * Converts numbers to the appropriate language-specific digits.
      *
-     * @param  int  $number  The number to convert.
+     * @param  int|string  $number  The number to convert.
      */
-    public function formatNumber(int $number): string
+    public function formatNumber(int|string $number): string
     {
         return preg_replace_callback("/\d/m", function ($matches) {
             return $this->defaultLang->getDigit($matches[0]);
@@ -117,7 +117,7 @@ class FormatDate implements Formatter
             return $this->defaultLang->getMonth($this->date['m'] - 1)[$format];
         }
 
-        return $this->formatNumber($this->date[$format]);
+        return $this->formatNumber(sprintf('%02d', $this->date[$format]));
     }
 
     /**
@@ -161,6 +161,10 @@ class FormatDate implements Formatter
 
         if ($formatChar == 'g') {
             return $this->defaultLang->getGate();
+        }
+
+        if ($formatChar == 'd') {
+            return $this->formatNumber(sprintf('%02d', $this->date[$formatChar]));
         }
 
         return $this->formatNumber($this->date[$formatChar]);

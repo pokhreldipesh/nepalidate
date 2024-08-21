@@ -55,6 +55,8 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public Formatter $formatter;
 
+    public static $defaultOutputFormat = '%04d/%02d/%02d';
+
     /**
      * Constructor for initializing the date object with a specific date and language.
      *
@@ -88,7 +90,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     public function setUp(string $date): void
     {
         [$this->year, $this->month, $this->day] = self::validateDateAndGetComponents($date);
-        $this->date = implode('/', [$this->year, $this->month, $this->day]);
+        $this->date = sprintf(self::$defaultOutputFormat, $this->year, $this->month, $this->day);
         $this->formatter->setUp($this);
     }
 
