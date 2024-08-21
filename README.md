@@ -1,5 +1,5 @@
 
-[//]: # (<p align="center"><img src="./calendar.png"  alt="Laravel Logo"></p>)
+****[//]: # (<p align="center"><img src="./calendar.png"  alt="Laravel Logo"></p>)
 
 # Nepali Date
 
@@ -71,17 +71,17 @@ $date->isLessThan('2048/10/5');
 
 Supported format characters: Y, m, M, F, d, w, D, l, g
 
-| Format Character | Description                                    | Example Output                        |
-|------------------|------------------------------------------------|---------------------------------------|
-| `Y`              | Year (4-digit format)                          | `2078`                                |
-| `m`              | Month (Numeric, zero-padded, 01-12)            | `01` for January, `12` for December   |
-| `M`              | Month (Short textual representation)           | `Jan` for January, `Dec` for December |
-| `F`              | Month (Full textual representation)            | `January`, `December`                 |
-| `d`              | Day of the month (Numeric, zero-padded, 01-31) | `01` for the 1st, `31` for the 31st   |
-| `w`              | Day of the week (Numeric, 1-7)                 | `1` for Sunday, `7` for Saturday      |
-| `D`              | Day of the week (Short textual representation) | `Sun` for Sunday, `Wed` for Saturday  |
-| `l`              | Day of the week (Full textual representation)  | `Sunday`, `Wednesday`                 |
-| `g`              | This is not for english(AD) format             | `Gate` or `गते`                       |
+| Format Character | Description                                    | Example Output                            |
+|------------------|------------------------------------------------|-------------------------------------------|
+| `Y`              | Year (4-digit format)                          | `2078`                                    |
+| `m`              | Month (Numeric, zero-padded, 01-12)            | `01` for Baisakh, `12` for Chait          |
+| `M`              | Month (Short textual representation)           | `Bai` for Baisakh, `Dec` for Chai         |
+| `F`              | Month (Full textual representation)            | `Baisakh`, `Jeth`                         |
+| `d`              | Day of the month (Numeric, zero-padded, 01-31) | `01` for the 1st, `31` for the 31st       |
+| `w`              | Day of the week (Numeric, 1-7)                 | `1` for Aaitabar, `7` for Sanibar         |
+| `D`              | Day of the week (Short textual representation) | `Aaita` for Aaitabar, `Budh` for Budhabar |
+| `l`              | Day of the week (Full textual representation)  | `Aaitabar`, `Sombar`                      |
+| `g`              | This is not for english(AD) format             | `Gate` or `गते`                           |
 
 ```php
 
@@ -228,4 +228,4 @@ class CustomLanguage implements \Dipesh\NepaliDate\Contracts\Language
 ---
 ## License
 
-Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT).****
