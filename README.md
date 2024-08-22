@@ -1,6 +1,3 @@
-
-****[//]: # (<p align="center"><img src="./calendar.png"  alt="Laravel Logo"></p>)
-
 # Nepali Date
 
 The Nepali Date package is designed for working with the Nepali calendar. It provides functionality for converting dates between the English (AD) and Nepali (BS) calendars, along with a wide range of methods for handling and manipulating Nepali dates. This comprehensive tool facilitates seamless integration and operations within the Nepali calendar system.
