@@ -230,6 +230,6 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
             $this->language = $this->resolveLanguage($lang);
         }
 
-        return $this->formatter->format($format);
+        return $this->formatter->setUp($this)->format($format);
     }
 }
