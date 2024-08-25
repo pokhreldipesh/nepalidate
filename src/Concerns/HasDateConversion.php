@@ -2,7 +2,7 @@
 
 namespace Dipesh\NepaliDate\Concerns;
 
-use Carbon\Carbon;
+use Dipesh\NepaliDate\EnDate;
 use Exception;
 
 trait HasDateConversion
@@ -15,13 +15,13 @@ trait HasDateConversion
      * This method calculates the equivalent AD date by adding the total number of days
      * from a base AD date to the current Nepali date. The result is returned as a Carbon instance.
      *
-     * @return Carbon Returns a Carbon instance representing the equivalent AD date.
+     * @return EnDate Returns a Carbon instance representing the equivalent AD date.
      *
      * @throws Exception If an error occurs during the conversion process.
      */
-    public function toAd(): Carbon
+    public function toAd(): EnDate
     {
-        return Carbon::parse(self::$baseEnglishDate)->addDays(
+        return (new EnDate(self::$baseEnglishDate))->addDays(
             $this->getTotalDaysFromBaseDate($this->date)
         );
     }
@@ -41,7 +41,7 @@ trait HasDateConversion
     public static function fromADDate(string $date): static
     {
         return (new static(self::$equivalentNepaliDate))->addDays(
-            Carbon::parse(self::$baseEnglishDate)->diffInDays($date)
+            (new EnDate(self::$baseEnglishDate))->diffDays(new EnDate($date))
         );
     }
 }
