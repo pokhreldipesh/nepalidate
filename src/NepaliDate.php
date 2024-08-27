@@ -2,7 +2,6 @@
 
 namespace Dipesh\NepaliDate;
 
-use Carbon\Carbon;
 use Dipesh\NepaliDate\Concerns\HasDateComparison;
 use Dipesh\NepaliDate\Concerns\HasDateConversion;
 use Dipesh\NepaliDate\Concerns\HasDateManipulation;
@@ -49,7 +48,7 @@ class NepaliDate extends Date
      */
     public static function now(): static
     {
-        return self::fromADDate(Carbon::now()->format('Y-m-d'));
+        return self::fromADDate((new EnDate)->format('Y-m-d'));
     }
 
     /**
