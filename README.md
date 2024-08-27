@@ -24,7 +24,7 @@ $date = $date->setLang('np') or $date->setLang(new \Dipesh\NepaliDate\lang\Nepal
 
 //or
 $date = new NepaliDate("2050-8-10") // Creates date instance with default language configuration
-
+//You are free to use either of these formats, e.g., yyyy-mm-dd or yyyy/mm/dd." 
 //or
 $date = NepaliDate::make("2070-8-20"); // Creates date instance with default language configuration
 
@@ -39,7 +39,7 @@ $date->create($date); // Creates an immutable date instance while retaining the 
 ### Date Conversion
 
 ```php
-$date->toAd(); // output Carbon date format
+$date->toAd(); // creates php Date instance
 //or
 $date = NepaliDate::fromADDate("1990-9-10");
 ```
