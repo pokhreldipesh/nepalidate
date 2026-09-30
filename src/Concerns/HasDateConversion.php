@@ -2,13 +2,13 @@
 
 namespace Dipesh\NepaliDate\Concerns;
 
+use Dipesh\NepaliDate\DataSet;
 use Dipesh\NepaliDate\EnDate;
+use Dipesh\NepaliDate\SystemDataSet;
 use Exception;
 
 trait HasDateConversion
 {
-    use HasCalenderLookupTable;
-
     /**
      * Convert the current Nepali date instance to its equivalent AD (Gregorian) date.
      *
@@ -21,7 +21,9 @@ trait HasDateConversion
      */
     public function toAd(): EnDate
     {
-        return (new EnDate(self::$baseEnglishDate))->addDays(
+        $baseEnglishDate = $this->dataSet?->getBaseEnglishDate() ?? SystemDataSet::DEFAULT_BASE_ENGLISH_DATE;
+
+        return (new EnDate($baseEnglishDate))->addDays(
             $this->getTotalDaysFromBaseDate($this->date)
         );
     }
@@ -34,14 +36,20 @@ trait HasDateConversion
      * base Nepali date. The resulting Nepali date is returned as an instance of the calling class.
      *
      * @param  string  $date  The AD date to be converted, provided as a string.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset; defaults to the packaged calendar.
      * @return static Returns an instance of the calling class representing the equivalent Nepali date.
      *
      * @throws Exception If an invalid date is provided or if any error occurs during the conversion.
      */
-    public static function fromADDate(string $date): static
+    public static function fromADDate(string $date, ?DataSet $dataSet = null): static
     {
-        return (new static(self::$equivalentNepaliDate))->addDays(
-            (new EnDate(self::$baseEnglishDate))->diffDays(new EnDate($date))
+        $baseEnglishDate = $dataSet?->getBaseEnglishDate() ?? SystemDataSet::DEFAULT_BASE_ENGLISH_DATE;
+        $equivalentNepaliDate = $dataSet?->getEquivalentNepaliDate() ?? SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE;
+
+        $instance = new static($equivalentNepaliDate, null, $dataSet);
+
+        return $instance->addDays(
+            (new EnDate($baseEnglishDate))->diffDays(new EnDate($date))
         );
     }
 }

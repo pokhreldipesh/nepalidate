@@ -12,7 +12,7 @@ trait HasDateOperation
      *
      * This method takes either a Date object or a date string, extracts the year, month, and day components,
      * and uses the daysCalculator to compute the total number of days since the base date in the Nepali calendar.
-     * The result is adjusted by subtracting a constant (263) to provide the correct total.
+     * The result is relative to the dataset's equivalent Nepali base date (0 on that date).
      *
      * @param  Date|string  $date  The target date as either a Date object or a date string.
      * @return int The total number of days from the base date to the specified date.
@@ -27,7 +27,7 @@ trait HasDateOperation
             [$year, $month, $day] = $this->validateDateAndGetComponents($date);
         }
 
-        return $this->dateProcessor->getDays($year, $month, $day) - 263;
+        return $this->dateProcessor->getDaysFromBase($year, $month, $day);
     }
 
     /**

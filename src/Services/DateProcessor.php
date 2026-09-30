@@ -2,13 +2,54 @@
 
 namespace Dipesh\NepaliDate\Services;
 
-use Dipesh\NepaliDate\Concerns\HasCalenderLookupTable;
+use Dipesh\NepaliDate\DataSet;
 use Dipesh\NepaliDate\InvalidDateRangeException;
+use Dipesh\NepaliDate\SystemDataSet;
 use Exception;
 
 class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
 {
-    use HasCalenderLookupTable;
+    private const BASE_WEEK_DAY = 7;
+
+    /**
+     * Optional custom dataset. When null, the packaged calendar is used.
+     */
+    private ?DataSet $dataSet;
+
+    private ?DataSet $defaultDataSet = null;
+
+    public function __construct(?DataSet $dataSet = null)
+    {
+        $this->dataSet = $dataSet;
+    }
+
+    public function getDataSet(): ?DataSet
+    {
+        return $this->dataSet;
+    }
+
+    private function calendar(): DataSet
+    {
+        return $this->dataSet ?? ($this->defaultDataSet ??= SystemDataSet::packaged());
+    }
+
+    /**
+     * @return array<int, array<int, int>>
+     */
+    private function calendarRows(): array
+    {
+        return iterator_to_array($this->calendar());
+    }
+
+    private function baseWeekDay(): int
+    {
+        return self::BASE_WEEK_DAY;
+    }
+
+    private function equivalentNepaliDate(): string
+    {
+        return $this->calendar()->getEquivalentNepaliDate();
+    }
 
     /**
      * Calculates the total number of days from the beginning of the calendar up to a specified date.
@@ -26,13 +67,14 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
      */
     public function getDays(int $year, int $month, int $day): int
     {
+        $bs = $this->calendarRows();
         $totalDays = 0;
 
-        if (! isset(self::$bs[$year])) {
+        if (! isset($bs[$year])) {
             throw new InvalidDateRangeException;
         }
 
-        foreach (self::$bs as $y => $months) {
+        foreach ($bs as $y => $months) {
             if ($y < $year) {
                 $totalDays += array_sum($months);
             } elseif ($y == $year) {
@@ -42,6 +84,18 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
         }
 
         return $totalDays;
+    }
+
+    /**
+     * Days from the dataset's equivalent Nepali base date (0 on that date).
+     *
+     * Generalizes the previous hardcoded offset for the packaged 2000/09/17 base.
+     */
+    public function getDaysFromBase(int $year, int $month, int $day): int
+    {
+        [$baseYear, $baseMonth, $baseDay] = $this->parseYmd($this->equivalentNepaliDate());
+
+        return $this->getDays($year, $month, $day) - $this->getDays($baseYear, $baseMonth, $baseDay);
     }
 
     /**
@@ -57,10 +111,11 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
      */
     public function getDateFromDays(int $totalDays): string
     {
+        $bs = $this->calendarRows();
         $accumulatedDays = 0;
 
         // Iterate through the years in the BS calendar
-        foreach (self::$bs as $year => $months) {
+        foreach ($bs as $year => $months) {
             // Calculate the total number of days in the current year
             $daysInYear = array_sum($months);
 
@@ -84,7 +139,7 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
         throw new InvalidDateRangeException;
     }
 
-    /**we
+    /**
      * Calculate the corresponding weekday for a given number of days.
      *
      * This method calculates the weekday by taking the modulus of the number of days
@@ -92,18 +147,28 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
      * it falls within the valid range of weekdays (1-7). The return value corresponds
      * to the day of the week, where 1 represents Sunday and 7 represents Saturday.
      *
-     * @param int $days The number of days to calculate the weekday for.
+     * @param  int  $days  The number of days to calculate the weekday for.
      * @return int The weekday corresponding to the given number of days (1 for Sunday, 7 for Saturday).
      */
     public function getWeekDayFromDays(int $days): int
     {
-        $day = $days % self::$baseWeekDay;
+        $day = $days % $this->baseWeekDay();
 
-        //Calculate weekday traversing backward from base date
+        // Calculate weekday traversing backward from base date
         if ($day < 0) {
             $day = $day + 7;
         }
 
         return $day == 0 ? 7 : $day;
+    }
+
+    /**
+     * @return array{0: int, 1: int, 2: int}
+     */
+    private function parseYmd(string $date): array
+    {
+        [$year, $month, $day] = array_map('intval', explode('/', $date));
+
+        return [$year, $month, $day];
     }
 }

@@ -43,6 +43,78 @@ $date->toAd(); // creates php Date instance
 //or
 $date = NepaliDate::fromADDate("1990-9-10");
 ```
+
+### Calendar DataSet
+
+By default the package uses the packaged Nepali calendar. Pass your own calendar data to any conversion API to work with a custom dataset.
+
+#### Custom DataSet with your own rows
+
+Each year row is 12 month day-counts (29–32). Base dates anchor AD ↔ BS conversion.
+
+```php
+use Dipesh\NepaliDate\DataSet;
+use Dipesh\NepaliDate\NepaliDate;
+
+$dataSet = DataSet::make(
+    [
+        2000 => [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        2001 => [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+    ],
+    '1944/01/01', // base English (AD) date that matches the BS base date below
+    '2000/09/17', // equivalent Nepali (BS) date
+);
+
+$date = NepaliDate::make('2000/09/17', $dataSet);
+$date->toAd()->format('Y-m-d'); // 1944-01-01
+
+$date = NepaliDate::fromADDate('1944/01/01', $dataSet);
+$date->format('Y/m/d'); // 2000/09/17
+```
+
+You can also build a dataset incrementally:
+
+```php
+$dataSet = DataSet::make()
+    ->addRow(2000, [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31])
+    ->append(2001, [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30]);
+```
+
+Data sets are iterable and serializable:
+
+```php
+foreach ($dataSet as $year => $monthDays) {
+    // ...
+}
+
+$restored = unserialize(serialize($dataSet));
+```
+
+#### Extending DataSet
+
+Ship a reusable custom calendar by extending `DataSet`. Override the constructor to provide your own rows and base dates.
+
+```php
+use Dipesh\NepaliDate\DataSet;
+
+class TinyDataSet extends DataSet
+{
+    public function __construct(array $rows = [], ?string $baseEnglishDate = null, ?string $equivalentNepaliDate = null)
+    {
+        parent::__construct(
+            $rows ?: [2000 => [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]],
+            $baseEnglishDate ?? '2000/01/01',
+            $equivalentNepaliDate ?? '2000/01/01',
+        );
+    }
+}
+
+$dataSet = new TinyDataSet; // or TinyDataSet::make()
+$date = NepaliDate::make('2000/02/01', $dataSet);
+```
+
+`make()` is late-static-bound, so `TinyDataSet::make()` returns a `TinyDataSet`.
+
 ### Date Component Retrieval Based on the Language Configuration
 ```php
 $date->year();   // Retrieves the year
@@ -146,6 +218,11 @@ class CustomDateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
         // Your custom logic for calculating days
     }
 
+    public function getDaysFromBase(int $year, int $month, int $day): int
+    {
+        // Days from your dataset's equivalent Nepali base date (0 on that date)
+    }
+
     public function getDateFromDays(int $totalDays): string
     {
         // Your custom logic for calculating a date from total days
@@ -225,4 +302,4 @@ class CustomLanguage implements \Dipesh\NepaliDate\Contracts\Language
 ---
 ## License
 
-Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT).****
+Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT)

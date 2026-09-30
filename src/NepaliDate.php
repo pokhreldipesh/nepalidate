@@ -31,12 +31,13 @@ class NepaliDate extends Date
      *
      * @param  string|null  $date  The date string in Nepali date format. Defaults to current date if null.
      * @param  Language|null  $language  The language used for formatting. Defaults to English.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset for conversions.
      *
      * @throws Exception
      */
-    public function __construct(string $date = null, Language $language = null)
+    public function __construct(string $date = null, Language $language = null, ?DataSet $dataSet = null)
     {
-        parent::__construct($date ?? self::now(), $language ?? new English);
+        parent::__construct($date ?? self::now($dataSet), $language ?? new English, $dataSet);
     }
 
     /**
@@ -44,11 +45,13 @@ class NepaliDate extends Date
      *
      * Returns an instance of NepaliDate set to the current date.
      *
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset for conversions.
+     *
      * @throws Exception
      */
-    public static function now(): static
+    public static function now(?DataSet $dataSet = null): static
     {
-        return self::fromADDate((new EnDate)->format('Y-m-d'));
+        return self::fromADDate((new EnDate)->format('Y-m-d'), $dataSet);
     }
 
     /**
@@ -74,12 +77,13 @@ class NepaliDate extends Date
      * Returns a new instance of NepaliDate with the provided date string.
      *
      * @param  string  $date  The date string in Nepali date format.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset for conversions.
      *
      * @throws Exception
      */
-    public static function make(string $date): self
+    public static function make(string $date, ?DataSet $dataSet = null): self
     {
-        return new static($date);
+        return new static($date, null, $dataSet);
     }
 
     /**

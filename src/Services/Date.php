@@ -6,6 +6,7 @@ use Dipesh\NepaliDate\Concerns\HasDateOperation;
 use Dipesh\NepaliDate\Contracts\DateProcessor;
 use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
+use Dipesh\NepaliDate\DataSet;
 use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\lang\Nepali;
 use Dipesh\NepaliDate\Services\DateProcessor as serviceDateProcessor;
@@ -55,6 +56,11 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      */
     public Formatter $formatter;
 
+    /**
+     * @var DataSet|null Optional custom calendar dataset used for conversion.
+     */
+    public ?DataSet $dataSet;
+
     public static $defaultOutputFormat = '%04d/%02d/%02d';
 
     /**
@@ -62,13 +68,17 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      *
      * @param  string  $date  The date to initialize the date object.
      * @param  Language  $language  An instance of the Language class used to configure language-specific settings.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset; defaults to the packaged lookup table.
      *
      * @throws Exception If the date setup fails or an invalid date is provided.
      */
-    public function __construct(string $date, Language $language)
+    public function __construct(string $date, Language $language, ?DataSet $dataSet = null)
     {
         // Set the language configuration based on the provided Language instance.
         $this->language = $this->resolveLanguage($language);
+
+        // Attach the optional custom dataset before building the processor.
+        $this->dataSet = $dataSet;
 
         // Initialize the date processor, which will be used for date-related calculations throughout the object.
         $this->dateProcessor = $this->getDateProcessor();
@@ -113,13 +123,14 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
      *
      * This method returns an instance of the DateProcessor class,
      * which contains logic specific to calculating days within the
-     * Bikram Sambat (BS) calendar system.
+     * Bikram Sambat (BS) calendar system. When a custom dataset is set,
+     * that dataset drives the calculation.
      *
      * @return DateProcessor An instance of serviceDateProcessor for date calculations.
      */
     public function getDateProcessor(): DateProcessor
     {
-        return new serviceDateProcessor;
+        return new serviceDateProcessor($this->dataSet);
     }
 
     /**
