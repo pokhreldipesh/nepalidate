@@ -5,47 +5,85 @@ namespace Dipesh\NepaliDate;
 use Dipesh\NepaliDate\Concerns\HasDateComparison;
 use Dipesh\NepaliDate\Concerns\HasDateConversion;
 use Dipesh\NepaliDate\Concerns\HasDateManipulation;
+use Dipesh\NepaliDate\Concerns\HasDateOperation;
+use Dipesh\NepaliDate\Contracts\DateProcessor as DateProcessorContract;
 use Dipesh\NepaliDate\Contracts\Language;
 use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\Services\Date;
+use Dipesh\NepaliDate\Services\DateProcessor;
 use Exception;
 
 /**
  * NepaliDate Class
  *
- * This class provides functionalities for handling Nepali dates, including
- * date conversion, manipulation, comparison, and formatting. It extends the
- * base Date class and utilizes multiple traits to offer comprehensive date
- * operations tailored for the Nepali calendar system.
+ * Public API for working with Nepali (BS) dates. Extends the system-level
+ * Date value object with calendar-aware operations: conversion, manipulation,
+ * comparison, and weekday resolution.
  */
 class NepaliDate extends Date
 {
-    use HasDateComparison, HasDateConversion, HasDateManipulation;
+    use HasDateComparison, HasDateConversion, HasDateManipulation, HasDateOperation;
 
     /**
-     * NepaliDate Constructor
-     *
-     * Initializes the NepaliDate instance with a given date string and language.
-     * If no date is provided, the current date is used. It sets up the necessary
-     * language formatting and days calculator.
-     *
-     * @param  string|null  $date  The date string in Nepali date format. Defaults to current date if null.
-     * @param  Language|null  $language  The language used for formatting. Defaults to English.
-     * @param  DataSet|null  $dataSet  Optional custom calendar dataset for conversions.
+     * @var DataSet|null Optional custom calendar dataset used for conversion.
+     */
+    public ?DataSet $dataSet;
+
+    /**
+     * @var DateProcessorContract Day-math engine over the calendar dataset.
+     */
+    public DateProcessorContract $dateProcessor;
+
+    /**
+     * @param  string|null  $date  Date string in Nepali format. Defaults to current date.
+     * @param  Language|null  $language  Formatting language. Defaults to English.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
      * @throws Exception
      */
-    public function __construct(string $date = null, Language $language = null, ?DataSet $dataSet = null)
+    public function __construct(?string $date = null, ?Language $language = null, ?DataSet $dataSet = null)
     {
-        parent::__construct($date ?? self::now($dataSet), $language ?? new English, $dataSet);
+        $this->dataSet = $dataSet;
+        $this->dateProcessor = $this->getDateProcessor();
+
+        parent::__construct($date ?? self::now($dataSet)->date, $language ?? new English);
+
+        $this->computeWeekDay();
+    }
+
+    /**
+     * Create a DateProcessor for the current dataset.
+     */
+    public function getDateProcessor(): DateProcessorContract
+    {
+        return new DateProcessor($this->dataSet);
+    }
+
+    /**
+     * Compute and assign the weekDay property from the current date components.
+     */
+    protected function computeWeekDay(): void
+    {
+        $this->weekDay = $this->dateProcessor->getWeekDayFromDays(
+            $this->getTotalDaysFromBaseDate($this->date)
+        );
+    }
+
+    /**
+     * Re-parse the date and refresh weekDay.
+     *
+     * @throws Exception
+     */
+    public function setUp(string $date): void
+    {
+        parent::setUp($date);
+        $this->computeWeekDay();
     }
 
     /**
      * Get Current Date
      *
-     * Returns an instance of NepaliDate set to the current date.
-     *
-     * @param  DataSet|null  $dataSet  Optional custom calendar dataset for conversions.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
      * @throws Exception
      */
@@ -57,9 +95,7 @@ class NepaliDate extends Date
     /**
      * Create a New Instance with a Given Date
      *
-     * Returns a new instance of NepaliDate initialized with the provided date.
-     *
-     * @param  string  $date  The date string in Nepali date format.
+     * @param  string  $date  Date string in Nepali format.
      *
      * @throws Exception
      */
@@ -74,10 +110,8 @@ class NepaliDate extends Date
     /**
      * Create a New Instance
      *
-     * Returns a new instance of NepaliDate with the provided date string.
-     *
-     * @param  string  $date  The date string in Nepali date format.
-     * @param  DataSet|null  $dataSet  Optional custom calendar dataset for conversions.
+     * @param  string  $date  Date string in Nepali format.
+     * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
      * @throws Exception
      */
@@ -89,10 +123,7 @@ class NepaliDate extends Date
     /**
      * Set Default Formatting Language
      *
-     * Sets the default language for date formatting. Returns a new instance
-     * of NepaliDate with the specified language.
-     *
-     * @param  string|Language  $language  The language code or Language instance.
+     * @param  string|Language  $language  Language code or instance.
      *
      * @throws Exception
      */
@@ -107,8 +138,6 @@ class NepaliDate extends Date
 
     /**
      * Convert to String
-     *
-     * Returns the Nepali date as a string.
      */
     public function __toString(): string
     {

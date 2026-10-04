@@ -2,6 +2,40 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
+## [Unreleased] — Date rewrite as pure value object
+
+### Changed
+
+- **`src/Services/Date.php`** — rewritten as a pure system-level value object:
+  - Removed: `$dataSet`, `$dateProcessor`, `getDateProcessor()`, `HasDateOperation` trait, `__get('weekDay')`.
+  - Added: `public int $weekDay` (real property), `Date::parseComponents()` (public static).
+  - Constructor simplified to `new Date(string $date, Language $language)` — no DataSet param.
+  - No calendar arithmetic; delegates formatting to `Formatter`.
+- **`src/NepaliDate.php`** — now owns all calculation dependencies:
+  - Holds `$dataSet`, `$dateProcessor`, `getDateProcessor()`.
+  - Uses `HasDateOperation` trait (moved from `Date`).
+  - Overrides `setUp()` to recompute `weekDay` after parsing.
+  - Constructor: `new NepaliDate(?string $date, ?Language $language, ?DataSet $dataSet)`.
+- **`src/Concerns/HasDateOperation.php`** — `getTotalDaysFromBaseDate()` rewritten to use `getDays()` arithmetic (base = `getDays(target) - getDays(baseDate)`) instead of `DateProcessor::getDaysFromBase()`.
+- **`src/Contracts/DateProcessor.php`** — **removed** `getDaysFromBase()` from the interface.
+- **`src/Services/DateProcessor.php`** — `getDaysFromBase()` kept as `@internal` public method (used by existing tests).
+- **`src/Contracts/Date.php`** — `month()` signature aligned: `month(string $format = 'm'): int|string`.
+
+### Added
+
+- **`tests/DateTest.php`** — 41 PHPUnit tests covering `Services\Date`: construction, parsing, validation, language-aware accessors, formatting, `parseComponents`, value-object purity.
+
+### Migration notes
+
+- `Date` no longer accepts `?DataSet` in its constructor; pass it to `NepaliDate` instead.
+- `DateProcessor` implementations no longer need `getDaysFromBase()`.
+- `$date->weekDay` is a real property (not magic `__get`); returns 0 on plain `Date`, computed on `NepaliDate`.
+- `Date::parseComponents()` replaces the private `validateDateAndGetComponents()`.
+
+### Verification
+
+- `vendor/bin/phpunit tests` — 100 tests, 181 assertions, green.
+
 ## [Unreleased] — v3.0 calendar DataSet refactor
 
 ### Added

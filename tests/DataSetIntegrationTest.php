@@ -7,7 +7,6 @@ use Dipesh\NepaliDate\NepaliDate;
 use Dipesh\NepaliDate\Services\DateProcessor;
 use Dipesh\NepaliDate\SystemDataSet;
 use PHPUnit\Framework\TestCase;
-use Tests\TinyCustomDataSet;
 
 class DataSetIntegrationTest extends TestCase
 {

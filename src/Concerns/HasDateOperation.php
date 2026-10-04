@@ -3,43 +3,44 @@
 namespace Dipesh\NepaliDate\Concerns;
 
 use Dipesh\NepaliDate\Contracts\Date;
+use Dipesh\NepaliDate\Services\Date as ServicesDate;
+use Dipesh\NepaliDate\SystemDataSet;
 use Exception;
 
 trait HasDateOperation
 {
     /**
-     * Calculates the total number of days from a base date to the specified date.
+     * Calculate the total number of days from the dataset's base Nepali date.
      *
-     * This method takes either a Date object or a date string, extracts the year, month, and day components,
-     * and uses the daysCalculator to compute the total number of days since the base date in the Nepali calendar.
-     * The result is relative to the dataset's equivalent Nepali base date (0 on that date).
+     * Returns 0 on the base date, positive after, negative before.
      *
-     * @param  Date|string  $date  The target date as either a Date object or a date string.
-     * @return int The total number of days from the base date to the specified date.
+     * @param  Date|string  $date  Date object or date string.
+     * @return int Days from the base date.
      *
-     * @throws Exception If the provided date is invalid or if any error occurs during calculation.
+     * @throws Exception If the date string is invalid.
      */
     public function getTotalDaysFromBaseDate(Date|string $date): int
     {
-        if ($date instanceof Date) {
-            [$year, $month, $day] = [$date->year, $date->month, $date->day];
-        } else {
-            [$year, $month, $day] = $this->validateDateAndGetComponents($date);
-        }
+        [$year, $month, $day] = $date instanceof Date
+            ? [$date->year, $date->month, $date->day]
+            : ServicesDate::parseComponents($date);
 
-        return $this->dateProcessor->getDaysFromBase($year, $month, $day);
+        [$baseYear, $baseMonth, $baseDay] = ServicesDate::parseComponents(
+            $this->dataSet?->getEquivalentNepaliDate()
+                ?? SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE
+        );
+
+        return $this->dateProcessor->getDays($year, $month, $day)
+            - $this->dateProcessor->getDays($baseYear, $baseMonth, $baseDay);
     }
 
     /**
-     * Computes the difference in days between the specified date and the current instance's date.
+     * Compute the difference in days between the given date and the current date.
      *
-     * This method calculates the total days from the base date for both the current instance's date
-     * and the provided date, returning the difference in days.
+     * @param  Date|string  $date  Target date.
+     * @return int Difference in days (positive if $date is later).
      *
-     * @param  Date|string  $date  The target date for comparison as either a Date object or a date string.
-     * @return int The difference in days between the specified date and the current instance's date.
-     *
-     * @throws Exception If the provided date is invalid or if any error occurs during calculation.
+     * @throws Exception If the date string is invalid.
      */
     public function diffDays(Date|string $date): int
     {
@@ -47,14 +48,11 @@ trait HasDateOperation
     }
 
     /**
-     * Retrieves the weekday of the current instance's date.
+     * Get the weekday of the current date in the requested format.
      *
-     * This method calculates the day of the week for the current date using modular arithmetic,
-     * returning a value from 1 (Sunday) to 7 (Saturday).
+     * @param  string  $format  'w' for number, 'D' for short name, 'l' for full name.
      *
-     * @return int|string The day of the week (1 for Sunday, 7 for Saturday) or in formatted form.
-     *
-     * @throws Exception If any error occurs during calculation.
+     * @throws Exception If the format is unsupported.
      */
     public function weekDay(string $format = 'w'): int|string
     {

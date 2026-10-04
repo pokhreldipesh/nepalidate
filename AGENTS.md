@@ -14,13 +14,13 @@ Guidance for AI agents working in this repository. Read this before changing cod
 
 | Piece | Role |
 |--------|------|
-| `NepaliDate` | Main user-facing date object (`extends Date`) |
-| `Services\Date` | Base date: parse, components, format, language, processor |
+| `NepaliDate` | Public API for working with dates (`extends Date`). Owns `DataSet` + `DateProcessor`, hosts all calculation traits |
+| `Services\Date` | System-level date value object: parse, components, format, language, `weekDay` property. No calendar math |
 | `Services\DateProcessor` | Day math over a calendar `DataSet` (falls back to `SystemDataSet::packaged()`) |
 | `DataSet` | Generic, iterable, serializable calendar data (rows + AD/BS base dates). Subclass for custom calendars |
 | `SystemDataSet` | Packaged system calendar (BS 2000–2090) + default base dates (`1944/01/01` ↔ `2000/09/17`) |
 | `EnDate` | Lightweight English/AD date helper (not Carbon) |
-| Concerns | `HasDateConversion`, `HasDateManipulation`, `HasDateComparison`, `HasDateOperation` |
+| Concerns | `HasDateConversion`, `HasDateManipulation`, `HasDateComparison`, `HasDateOperation` (all used by `NepaliDate`) |
 | Contracts | `Date`, `DateProcessor`, `Formatter`, `Language` |
 | `lang\English`, `lang\Nepali` | Language packs |
 | `InvalidDataSetException`, `InvalidDateRangeException` | Errors |
@@ -43,7 +43,7 @@ $date->setLang(string|Language $language): static
 $date->__toString(): string
 ```
 
-### `Dipesh\NepaliDate\Services\Date` (public surface used via NepaliDate)
+### `Dipesh\NepaliDate\Services\Date` (system-level value object)
 
 ```php
 // Public properties
@@ -51,19 +51,17 @@ $date->date;        // string  e.g. "2078/01/01"
 $date->year;        // int
 $date->month;       // int
 $date->day;         // int
-$date->weekDay;     // int (magic __get)
+$date->weekDay;     // int (real property, 0 = unset; NepaliDate computes it)
 $date->language;    // Language
-$date->dateProcessor; // DateProcessor contract
 $date->formatter;   // Formatter
-$date->dataSet;     // ?DataSet
 Date::$defaultOutputFormat; // '%04d/%02d/%02d'
 
 // Construction / setup
-new Date(string $date, Language $language, ?DataSet $dataSet = null)
+new Date(string $date, Language $language)
 $date->setUp(string $date): void
-$date->getDateProcessor(): DateProcessor
 $date->getFormatter(): Formatter
 $date->resolveLanguage(string|Language $language): Language
+Date::parseComponents(string $date): array  // static, returns [year, month, day]
 
 // Components (language-aware)
 $date->year(): int|string
@@ -72,6 +70,18 @@ $date->day(): int|string
 
 // Formatting (README characters: Y, m, M, F, d, w, D, l, g)
 $date->format(string $format = 'Y/m/d', string|Language|null $lang = null): string
+```
+
+### `Dipesh\NepaliDate\NepaliDate` (additional properties \& methods)
+
+```php
+// Properties (inherited from Date plus)
+$date->dataSet;         // ?DataSet
+$date->dateProcessor;   // DateProcessor contract
+
+// Methods
+$date->getDateProcessor(): DateProcessor
+$date->setUp(string $date): void  // overrides Date::setUp, also recomputes weekDay
 ```
 
 ### Methods mixed into NepaliDate (README “public” ops)
@@ -112,7 +122,7 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
 
 ### Contracts
 
-- `Contracts\DateProcessor`: `getDays`, `getDaysFromBase`, `getDateFromDays`, `getWeekDayFromDays`
+- `Contracts\DateProcessor`: `getDays`, `getDateFromDays`, `getWeekDayFromDays`
 - `Contracts\Formatter`, `Contracts\Language`, `Contracts\Date` — implement when replacing components (see README examples)
 
 ## Rules
@@ -130,6 +140,15 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
 - **Branch `v3.0`** — calendar DataSet refactor. Full detail in [`CHANGELOG.md`](./CHANGELOG.md).
   - Introduced `DataSet` / `SystemDataSet` / `InvalidDataSetException`.
   - Removed `HasCalenderLookupTable` and `CalendarDataSet`.
-  - `DateProcessor` contract: added `getDaysFromBase`, removed `getBaseEnglishDate` / `getEquivalentNepaliDate`.
-  - Optional `?DataSet` parameter added on `NepaliDate`/`Date` entry points (BC-safe).
+  - `DateProcessor` contract: removed `getBaseEnglishDate` / `getEquivalentNepaliDate`.
+  - Optional `?DataSet` parameter added on `NepaliDate` entry points (BC-safe).
+- **Date rewrite** — `Services\Date` is now a pure value object:
+  - Removed from `Date`: `$dataSet`, `$dateProcessor`, `getDateProcessor()`, `HasDateOperation` trait, `__get('weekDay')`.
+  - `weekDay` is now a real `public int` property (0 = unset; `NepaliDate` computes it).
+  - `Date::parseComponents()` (public static) replaces `validateDateAndGetComponents()`.
+  - `Date` constructor: `new Date(string $date, Language $language)` — no DataSet param.
+  - `NepaliDate` owns `$dataSet`, `$dateProcessor`, `getDateProcessor()`, `HasDateOperation`, and overrides `setUp()` to recompute `weekDay`.
+  - `Contracts\DateProcessor`: removed `getDaysFromBase` (kept as `@internal` on concrete `Services\DateProcessor`).
+  - `HasDateOperation::getTotalDaysFromBaseDate()` now uses `getDays()` arithmetic instead of `getDaysFromBase()`.
+  - `Contracts\Date::month()` signature aligned to `month(string $format = 'm')`.
 - Keep this section updated when you land further changes.

@@ -89,7 +89,7 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
     /**
      * Days from the dataset's equivalent Nepali base date (0 on that date).
      *
-     * Generalizes the previous hardcoded offset for the packaged 2000/09/17 base.
+     * @internal Use getDays() arithmetic instead. Kept public for backward compatibility with existing tests.
      */
     public function getDaysFromBase(int $year, int $month, int $day): int
     {

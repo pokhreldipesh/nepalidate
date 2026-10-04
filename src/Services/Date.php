@@ -2,116 +2,90 @@
 
 namespace Dipesh\NepaliDate\Services;
 
-use Dipesh\NepaliDate\Concerns\HasDateOperation;
-use Dipesh\NepaliDate\Contracts\DateProcessor;
 use Dipesh\NepaliDate\Contracts\Formatter;
 use Dipesh\NepaliDate\Contracts\Language;
-use Dipesh\NepaliDate\DataSet;
 use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\lang\Nepali;
-use Dipesh\NepaliDate\Services\DateProcessor as serviceDateProcessor;
 use Exception;
 
 /**
- * Class Date
+ * System-level date value object.
  *
- * @property int $weekDay Represents a Nepali Date object, providing methods to manipulate and retrieve date components.
+ * Parses and holds a BS (Bikram Sambat) date string and its components.
+ * Delegates formatting to a Formatter. Contains no calendar arithmetic,
+ * no DataSet, and no DateProcessor — those live on NepaliDate.
  */
 class Date implements \Dipesh\NepaliDate\Contracts\Date
 {
-    use HasDateOperation;
-
     /**
-     * @var string The formatted date string (e.g., "2078/01/01").
+     * @var string Normalized date string (e.g. "2078/01/01").
      */
     public string $date;
 
     /**
-     * @var int The day component of the date.
-     */
-    public int $day;
-
-    /**
-     * @var int The month component of the date.
-     */
-    public int $month;
-
-    /**
-     * @var int The year component of the date.
+     * @var int Year component.
      */
     public int $year;
 
     /**
-     * @var Language The language used for formatting date components.
+     * @var int Month component (1-12).
+     */
+    public int $month;
+
+    /**
+     * @var int Day component.
+     */
+    public int $day;
+
+    /**
+     * @var int Day of the week (1 = Sunday … 7 = Saturday).
+     */
+    public int $weekDay = 0;
+
+    /**
+     * @var Language Language used for formatting.
      */
     public Language $language;
 
     /**
-     * @var DateProcessor The daysCalculator used for calculate days from BS table
-     */
-    public DateProcessor $dateProcessor;
-
-    /**
-     * @var Formatter The formatter used for formatting date
+     * @var Formatter Formatter instance.
      */
     public Formatter $formatter;
 
     /**
-     * @var DataSet|null Optional custom calendar dataset used for conversion.
+     * @var string sprintf pattern used to normalize the date string.
      */
-    public ?DataSet $dataSet;
-
-    public static $defaultOutputFormat = '%04d/%02d/%02d';
+    public static string $defaultOutputFormat = '%04d/%02d/%02d';
 
     /**
-     * Constructor for initializing the date object with a specific date and language.
+     * @param  string  $date  Date string in "YYYY/MM/DD" format (separators may vary).
+     * @param  Language  $language  Language instance or code.
      *
-     * @param  string  $date  The date to initialize the date object.
-     * @param  Language  $language  An instance of the Language class used to configure language-specific settings.
-     * @param  DataSet|null  $dataSet  Optional custom calendar dataset; defaults to the packaged lookup table.
-     *
-     * @throws Exception If the date setup fails or an invalid date is provided.
+     * @throws Exception If the date format is invalid.
      */
-    public function __construct(string $date, Language $language, ?DataSet $dataSet = null)
+    public function __construct(string $date, Language $language)
     {
-        // Set the language configuration based on the provided Language instance.
         $this->language = $this->resolveLanguage($language);
-
-        // Attach the optional custom dataset before building the processor.
-        $this->dataSet = $dataSet;
-
-        // Initialize the date processor, which will be used for date-related calculations throughout the object.
-        $this->dateProcessor = $this->getDateProcessor();
-
-        // Initialize the formatter, which will handle the formatting of dates based on the language and date settings.
         $this->formatter = $this->getFormatter();
-
-        // Set up the date object with the provided date. This setup might be called from other parts of the code if needed.
         $this->setUp($date);
     }
 
     /**
-     * Sets up the date object by parsing and validating the provided date string.
+     * Parse and assign date components from a date string.
      *
-     * @param  string  $date  The date string to set up (e.g., "2078/01/01").
+     * @param  string  $date  Date string to parse.
      *
      * @throws Exception If the date format is invalid.
      */
     public function setUp(string $date): void
     {
-        [$this->year, $this->month, $this->day] = self::validateDateAndGetComponents($date);
+        [$this->year, $this->month, $this->day] = self::parseComponents($date);
         $this->date = sprintf(self::$defaultOutputFormat, $this->year, $this->month, $this->day);
         $this->formatter->setUp($this);
     }
 
     /**
-     * Retrieve a formatter instance for formatting dates.
-     *
-     * This method returns a new instance of the Formatter class,
-     * which provides various options for formatting dates according
-     * to the Nepali calendar and language settings.
-     *
-     * @return Formatter An instance of the FormatDate class for date formatting.
+     * Create a new Formatter instance.
      */
     public function getFormatter(): Formatter
     {
@@ -119,65 +93,33 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
-     * Retrieve a date processor object for date calculation from the BS calendar.
+     * Parse a date string into its year, month, and day components.
      *
-     * This method returns an instance of the DateProcessor class,
-     * which contains logic specific to calculating days within the
-     * Bikram Sambat (BS) calendar system. When a custom dataset is set,
-     * that dataset drives the calculation.
+     * Accepts flexible separators (e.g. "2078/01/01", "2078-01-01", "2078.1.1").
+     * Validates structural constraints only (year >= 1, month 1-12, day >= 1).
+     * Does not validate against a calendar — BS months can have up to 32 days.
      *
-     * @return DateProcessor An instance of serviceDateProcessor for date calculations.
+     * @return array{0: int, 1: int, 2: int} Year, month, day.
+     *
+     * @throws Exception If the date string does not match the expected shape.
      */
-    public function getDateProcessor(): DateProcessor
+    public static function parseComponents(string $date): array
     {
-        return new serviceDateProcessor($this->dataSet);
-    }
-
-    /**
-     * Magic method for lazy loading the `weekDay` property.
-     *
-     * This method is triggered when accessing the `weekDay` property on
-     * the object. If the `weekDay` property is requested, it calculates
-     * the weekday based on the total days from the base date. This
-     * approach is used to optimize performance by deferring the calculation
-     * until the property is actually needed.
-     *
-     * @param  string  $name  The name of the property being accessed.
-     * @return int The value of the requested property.
-     *
-     * @throws Exception If the property does not exist or is not accessible.
-     */
-    public function __get(string $name): int
-    {
-        if ($name === 'weekDay') {
-            return $this->dateProcessor->getWeekDayFromDays($this->getTotalDaysFromBaseDate($this->date));
-        }
-        throw new Exception("Undefined property {$name}");
-    }
-
-    /**
-     * Validates the date string and returns its components as an array.
-     *
-     * @param  string  $date  The date string to validate.
-     * @return array An array containing year, month, and day.
-     *
-     * @throws Exception If the date string is in an invalid format.
-     */
-    private static function validateDateAndGetComponents(string $date): array
-    {
-        preg_match_all("/\d+/", $date, $matches);
-
-        if (count($matches[0]) < 3) {
+        if (! preg_match('/^\s*(\d{1,4})\D+(\d{1,2})\D+(\d{1,2})\s*$/', $date, $matches)) {
             throw new Exception("Invalid date format. Please use 'YYYY/MM/DD'.");
         }
 
-        return array_map('intval', $matches[0]);
+        [$year, $month, $day] = array_map('intval', [$matches[1], $matches[2], $matches[3]]);
+
+        if ($year < 1 || $month < 1 || $month > 12 || $day < 1) {
+            throw new Exception("Invalid date format. Please use 'YYYY/MM/DD'.");
+        }
+
+        return [$year, $month, $day];
     }
 
     /**
-     * Retrieves the day component, formatted according to the language.
-     *
-     * @return int|string The day component, formatted in the specified language.
+     * Get the day component, formatted for the current language.
      */
     public function day(): int|string
     {
@@ -185,11 +127,11 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
-     * Retrieves the month component, formatted according to the language.
+     * Get the month component, formatted for the current language.
      *
-     * @return int|string The month component, formatted in the specified language.
+     * @param  string  $format  'm' for zero-padded number, 'M' for short name, 'F' for full name.
      *
-     * @throws Exception
+     * @throws Exception If the format is unsupported.
      */
     public function month(string $format = 'm'): int|string
     {
@@ -197,9 +139,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
-     * Retrieves the year component, formatted according to the language.
-     *
-     * @return int|string The year component, formatted in the specified language.
+     * Get the year component, formatted for the current language.
      */
     public function year(): int|string
     {
@@ -207,13 +147,11 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
-     * Resolve Language Instance
+     * Resolve a language code or instance to a Language object.
      *
-     * Resolves the provided language code or instance to a Language object.
+     * @param  string|Language  $language  'en', 'np', or a Language instance.
      *
-     * @param  string|Language  $language  The language code ('np' for Nepali, 'en' for English) or Language instance.
-     *
-     * @throws Exception If an unsupported language type is provided.
+     * @throws Exception If the language is not supported.
      */
     public function resolveLanguage(string|Language $language): Language
     {
@@ -226,14 +164,15 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
-     * Format Nepali Date
+     * Format the date according to a format string.
      *
-     * Formats the Nepali date according to the specified format string and language.
+     * Supported characters: Y, m, M, F, d, g.
+     * Weekday characters (w, D, l) require a date object with weekday support (NepaliDate).
      *
-     * @param  string  $format  The format string.
-     * @param  string|Language|null  $lang  The language code or Language instance. Defaults to the current language.
+     * @param  string  $format  Format string.
+     * @param  string|Language|null  $lang  Optional language override.
      *
-     * @throws Exception
+     * @throws Exception If the format is invalid or contains weekday tokens on a plain Date.
      */
     public function format(string $format = 'Y/m/d', string|Language|null $lang = null): string
     {
