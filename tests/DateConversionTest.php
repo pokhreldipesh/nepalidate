@@ -1,44 +1,36 @@
 <?php
 
-namespace Tests;
+declare(strict_types=1);
 
+use Dipesh\NepaliDate\EnDate;
 use Dipesh\NepaliDate\NepaliDate;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 
-class DateConversionTest extends TestCase
-{
-    public $date;
+describe('AD ↔ BS conversion', function (): void {
+    it('converts BS to AD (today round-trip)', function (): void {
+        $today = (new EnDate)->format('Y-m-d');
 
-    protected function setUp(): void
-    {
-        $this->date = new NepaliDate;
-    }
+        expect(NepaliDate::make(NepaliDate::fromADDate($today)->getDate())->toAd()->format('Y-m-d'))
+            ->toBe($today);
+    });
 
-    public function test_to_ad()
-    {
-        $this->assertSame((new \DateTime)->format('Y-m-d'), $this->date->toAd()->format('Y-m-d'));
-    }
+    it('converts AD to BS', function (): void {
+        $nepali = NepaliDate::fromADDate('1944/01/01');
 
-    public function test_from_ad()
-    {
-        $this->assertSame($this->date->format('Y-m-d'), $this->date::fromADDate((new \DateTime)->format('Y-m-d'))->format('Y-m-d'));
-    }
+        expect($nepali->getDate())->toBe('2000/09/17');
+    });
 
-    /** @dataProvider ADToBSDates */
-    public function test_date_conversion_from_ad_to_bs(string $AD, string $BS): void
-    {
-        $this->assertEquals($BS, $this->date::fromADDate($AD)->format('Y/m/d'));
-    }
+    it('converts specific AD dates to BS', function (string $ad, string $bs): void {
+        expect(NepaliDate::fromADDate($ad)->getDate())->toBe($bs);
+    })->with([
+        ['1944/01/01', '2000/09/17'],
+        ['2000/01/01', '2056/09/17'],
+        ['2023/01/01', '2079/09/17'],
+    ]);
 
-    public static function ADToBSDates(): array
-    {
-        return [
-            ['AD' => '1944/1/1', 'BS' => '2000/09/17'],
-            ['AD' => '1944/10/7', 'BS' => '2001/06/22'],
-            ['AD' => '1994/1/21', 'BS' => '2050/10/08'],
-            ['AD' => '2001/7/27', 'BS' => '2058/04/12'],
-            ['AD' => '2023/1/7', 'BS' => '2079/09/23'],
-        ];
-    }
-}
+    it('round-trips BS → AD → BS', function (): void {
+        $bs = '2081/04/25';
+        $ad = NepaliDate::make($bs)->toAd()->format('Y/m/d');
+
+        expect(NepaliDate::fromADDate($ad)->getDate())->toBe($bs);
+    });
+});

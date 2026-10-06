@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Dipesh\NepaliDate\Contracts;
+
+use Exception;
 
 /**
  * System-level date contract.
@@ -12,11 +16,11 @@ namespace Dipesh\NepaliDate\Contracts;
 interface Date
 {
     /**
-     * Parse and assign date components from a date string.
+     * Create a new instance with a different date, preserving language and other state.
      *
-     * @throws \Exception If the date format is invalid.
+     * @throws Exception If the date format is invalid.
      */
-    public function setUp(string $date): void;
+    public function withDate(string $date): static;
 
     // ── Raw components (for internal calculations) ──────────────
 
@@ -70,14 +74,13 @@ interface Date
     public function day(): int|string;
 
     // ── Formatting ──────────────────────────────────────────────
-
     /**
      * Format the date according to a format string.
      *
      * @param  string  $format  Format string (e.g. 'Y/m/d').
      * @param  string|Language|null  $lang  Optional language override.
      *
-     * @throws \Exception If the format is invalid.
+     * @throws Exception If the format is invalid.
      */
     public function format(string $format = 'Y/m/d', string|Language|null $lang = null): string;
 
@@ -91,7 +94,7 @@ interface Date
     /**
      * Resolve a language code or instance to a Language object.
      *
-     * @throws \Exception If the language is not supported.
+     * @throws Exception If the language is not supported.
      */
     public function resolveLanguage(string|Language $language): Language;
 
@@ -100,7 +103,7 @@ interface Date
      *
      * @return array{0: int, 1: int, 2: int} Year, month, day.
      *
-     * @throws \Exception If the date string is invalid.
+     * @throws Exception If the date string is invalid.
      */
     public static function parseComponents(string $date): array;
 }

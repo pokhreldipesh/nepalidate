@@ -25,10 +25,27 @@
     },
     "require-dev": {
         "laravel/pint": "^1.17",
-        "phpunit/phpunit": "^11.3"
+        "phpunit/phpunit": "^11.3",
+        "pestphp/pest": "^3.8",
+        "rector/rector": "^2.6",
+        "phpstan/phpstan": "^2.3"
     },
     "scripts": {
-        "test": "vendor/bin/phpunit tests --colors",
-        "lint": "vendor/bin/pint"
+        "lint": [
+            "pint --format agent",
+            "phpstan --memory-limit=-1"
+        ],
+        "test": "pest --parallel",
+        "test:lint": "pint --test --format agent",
+        "test:types": "phpstan",
+        "check": [
+            "@composer lint",
+            "@composer test"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

@@ -22,10 +22,7 @@ trait HasDateManipulation
     {
         $totalDays = $this->dateProcessor->getDays($this->year, $this->month, $this->day) + $day;
 
-        $cloned = clone $this;
-        $cloned->setUp($this->dateProcessor->getDateFromDays($totalDays));
-
-        return $cloned;
+        return $this->withDate($this->dateProcessor->getDateFromDays($totalDays));
     }
 
     /**

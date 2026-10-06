@@ -12,20 +12,25 @@ Guidance for AI agents working in this repository. Read this before changing cod
 
 ## Architecture (current)
 
-| Piece | Role |
-|--------|------|
-| `NepaliDate` | Public API for working with dates (`extends Date`). Owns `DataSet` + `DateProcessor`, hosts all calculation traits |
-| `Services\Date` | System-level date value object: parse, components, format, language, `weekDay` property. No calendar math |
-| `Services\DateProcessor` | Day math over a calendar `DataSet` (falls back to `SystemDataSet::packaged()`) |
-| `DataSet` | Generic, iterable, serializable calendar data (rows + AD/BS base dates). Subclass for custom calendars |
-| `SystemDataSet` | Packaged system calendar (BS 2000–2090) + default base dates (`1944/01/01` ↔ `2000/09/17`) |
-| `EnDate` | Lightweight English/AD date helper (not Carbon) |
-| Concerns | `HasDateConversion`, `HasDateManipulation`, `HasDateComparison`, `HasDateOperation` (all used by `NepaliDate`) |
-| Contracts | `Date`, `DateProcessor`, `Formatter`, `Language` |
-| `lang\English`, `lang\Nepali` | Language packs |
-| `InvalidDataSetException`, `InvalidDateRangeException` | Errors |
+| Piece | Role | Pattern |
+|--------|------|---------|
+| `NepaliDate` | Public API (`extends Date`). Owns `DataSet` + `DateProcessor`, hosts calculation traits. Mutable via `setUp()` | Facade + mutable state |
+| `Services\Date` | System-level date value object: parse, components, format, language. Immutable | Value Object |
+| `Services\Formatter` | Abstract formatter base — takes `Date` on construct | Template Method |
+| `Services\FormatDate` | Default BS date formatter (`extends Formatter`) | Strategy |
+| `Services\DateProcessor` | Day math over a calendar `DataSet` | Strategy |
+| `Contracts\Date` | Date interface: getters, `withDate`, `format`, `parseComponents` | Contract |
+| `Contracts\Formatter` | Formatter interface: `format`, `formatNumber`, `formatMonth`, `formatWeekDay` | Contract |
+| `Contracts\Language` | Language pack interface: digits, weeks, months, gate | Strategy |
+| `Contracts\DateProcessor` | Processor interface: `getDays`, `getDateFromDays`, `getWeekDayFromDays` | Contract |
+| `lang\English`, `lang\Nepali` | Language packs (immutable — all data as class constants) | Strategy |
+| `DataSet` | Fluent mutable calendar data container (rows + AD/BS base dates) | Builder |
+| `SystemDataSet` | Packaged calendar (BS 2000–2090) + default base dates | Factory |
+| `EnDate` | Immutable AD date helper (returns new instances from all arithmetic) | Value Object |
+| Concerns | `HasDateConversion`, `HasDateManipulation`, `HasDateComparison`, `HasDateOperation` | Mixins |
+| `InvalidDataSetException`, `InvalidDateRangeException` | Domain exceptions | — |
 
-Tests: PHPUnit (`vendor/bin/phpunit tests` or `composer test`). Style: Pint (`composer lint`).
+Tests: Pest (`vendor/bin/pest tests` or `composer test`). Style: Pint (`composer lint`). Static analysis: PHPStan (`composer stan`). Refactoring: Rector (`composer rector`).
 
 ## Backward compatibility — protected public API
 
@@ -58,7 +63,7 @@ Date::$defaultOutputFormat; // '%04d/%02d/%02d'
 
 // Construction / setup
 new Date(string $date, Language $language)
-$date->setUp(string $date): void
+$date->withDate(string $date): static  // immutable: returns new instance
 $date->getFormatter(): Formatter
 $date->resolveLanguage(string|Language $language): Language
 Date::parseComponents(string $date): array  // static, returns [year, month, day]
@@ -81,7 +86,8 @@ $date->dateProcessor;   // DateProcessor contract
 
 // Methods
 $date->getDateProcessor(): DateProcessor
-$date->setUp(string $date): void  // overrides Date::setUp, also recomputes weekDay
+$date->withDate(string $date): static  // preserves dataSet + recomputes weekDay
+$date->setUp(string $date): void       // mutator: re-parse in place + recompute weekDay
 ```
 
 ### Methods mixed into NepaliDate (README “public” ops)
@@ -123,8 +129,10 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
 ### Contracts
 
 - `Contracts\DateProcessor`: `getDays`, `getDateFromDays`, `getWeekDayFromDays`
-- `Contracts\Date`: `setUp`, `getDate`, `getYear`, `getMonth`, `getDay`, `getWeekDay`, `getLanguage`, `year`, `month`, `day`, `format`, `getFormatter`, `resolveLanguage`, `parseComponents`
-- `Contracts\Formatter`, `Contracts\Language` — implement when replacing components (see README examples)
+- `Contracts\Date`: `withDate`, `getDate`, `getYear`, `getMonth`, `getDay`, `getWeekDay`, `getLanguage`, `year`, `month`, `day`, `format`, `getFormatter`, `resolveLanguage`, `parseComponents`
+- `Contracts\Formatter`: `format`, `formatNumber`, `formatMonth`, `formatWeekDay`
+- `Contracts\Language` — implement when replacing components (see README examples)
+- `Services\Formatter` — abstract base class; takes `Date` on construct. Extend for custom formatters.
 
 ## Rules
 
@@ -153,4 +161,8 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
   - `HasDateOperation::getTotalDaysFromBaseDate()` now uses `getDays()` arithmetic instead of `getDaysFromBase()`.
   - `Contracts\Date::month()` signature aligned to `month(string $format = 'm')`.
   - `Contracts\Date` expanded: added `getDate()`, `getYear()`, `getMonth()`, `getDay()`, `getWeekDay()`, `getLanguage()`, `format()`, `getFormatter()`, `resolveLanguage()`, `parseComponents()`. Internal code (`FormatDate`, `HasDateOperation`) uses these getters instead of direct property access.
+  - `Date` is now immutable: `setUp()` removed, replaced by `withDate(): static` (returns new instance). `assignDate()` is `protected` for subclass init.
+  - `NepaliDate` adds `setUp()` as public mutator and overrides `withDate()` to preserve DataSet and recompute weekDay. `create()` and `addDays()` use `withDate()` instead of `clone + setUp`.
+  - Formatter system refactored: `setUp()` removed from `Contracts\Formatter`. `Services\Formatter` (abstract) takes `Date` on construct. `FormatDate` extends it. `Date::__clone` recreates formatter. `format()` no longer re-binds formatter.
+  - Full maintainability refactor: language packs use class constants (was `public static`), `EnDate` arithmetic returns new instances (was mutating), `DateProcessor` no longer depends on `Date` class (has own `DATE_FORMAT` constant), `Date::format()` language override is temporary (doesn't persist). `FormatDate` uses named `const` arrays for format groups.
 - Keep this section updated when you land further changes.

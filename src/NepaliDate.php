@@ -12,6 +12,7 @@ use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\Services\Date;
 use Dipesh\NepaliDate\Services\DateProcessor;
 use Exception;
+use Stringable;
 
 /**
  * NepaliDate Class
@@ -20,14 +21,12 @@ use Exception;
  * Date value object with calendar-aware operations: conversion, manipulation,
  * comparison, and weekday resolution.
  */
-class NepaliDate extends Date
+/**
+ * @phpstan-consistent-constructor
+ */
+class NepaliDate extends Date implements Stringable
 {
     use HasDateComparison, HasDateConversion, HasDateManipulation, HasDateOperation;
-
-    /**
-     * @var DataSet|null Optional custom calendar dataset used for conversion.
-     */
-    public ?DataSet $dataSet;
 
     /**
      * @var DateProcessorContract Day-math engine over the calendar dataset.
@@ -41,12 +40,11 @@ class NepaliDate extends Date
      *
      * @throws Exception
      */
-    public function __construct(?string $date = null, ?Language $language = null, ?DataSet $dataSet = null)
+    public function __construct(?string $date = null, ?Language $language = null, public ?DataSet $dataSet = null)
     {
-        $this->dataSet = $dataSet;
         $this->dateProcessor = $this->getDateProcessor();
 
-        parent::__construct($date ?? self::now($dataSet)->date, $language ?? new English);
+        parent::__construct($date ?? self::now($this->dataSet)->date, $language ?? new English);
 
         $this->computeWeekDay();
     }
@@ -70,13 +68,23 @@ class NepaliDate extends Date
     }
 
     /**
-     * Re-parse the date and refresh weekDay.
+     * Create a new instance with a different date, preserving language and dataset.
+     *
+     * @throws Exception
+     */
+    public function withDate(string $date): static
+    {
+        return new static($date, $this->language, $this->dataSet);
+    }
+
+    /**
+     * Mutate this instance to a new date and refresh weekDay.
      *
      * @throws Exception
      */
     public function setUp(string $date): void
     {
-        parent::setUp($date);
+        $this->assignDate($date);
         $this->computeWeekDay();
     }
 
@@ -101,10 +109,7 @@ class NepaliDate extends Date
      */
     public function create(string $date): static
     {
-        $newDateInstance = clone $this;
-        $newDateInstance->setUp($date);
-
-        return $newDateInstance;
+        return $this->withDate($date);
     }
 
     /**
@@ -131,7 +136,7 @@ class NepaliDate extends Date
     {
         $instance = clone $this;
         $instance->language = $this->resolveLanguage($language);
-        $instance->formatter = clone $instance->formatter->setUp($instance);
+        $instance->formatter = $instance->getFormatter();
 
         return $instance;
     }

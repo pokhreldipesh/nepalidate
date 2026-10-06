@@ -1,159 +1,145 @@
 <?php
 
-namespace Tests;
+declare(strict_types=1);
 
 use Dipesh\NepaliDate\DataSet;
 use Dipesh\NepaliDate\InvalidDataSetException;
-use PHPUnit\Framework\TestCase;
+use Tests\TinyCustomDataSet;
 
-class DataSetTest extends TestCase
-{
-    private array $validRow = [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31];
+beforeEach(function (): void {
+    $this->validRow = [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31];
+    $this->validRow2 = [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30];
+});
 
-    private array $validRow2 = [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30];
-
-    public function test_make_empty_dataset(): void
-    {
+describe('DataSet creation', function (): void {
+    it('creates empty dataset', function (): void {
         $ds = DataSet::make();
 
-        $this->assertSame(0, $ds->count());
-        $this->assertTrue($ds->isEmpty());
-        $this->assertNull($ds->firstYear());
-        $this->assertNull($ds->lastYear());
-        $this->assertSame([], iterator_to_array($ds));
-        $this->assertSame('', $ds->getBaseEnglishDate());
-        $this->assertSame('', $ds->getEquivalentNepaliDate());
-    }
+        expect($ds->count())->toBe(0)
+            ->and($ds->isEmpty())->toBeTrue()
+            ->and($ds->firstYear())->toBeNull()
+            ->and($ds->lastYear())->toBeNull()
+            ->and(iterator_to_array($ds))->toBe([])
+            ->and($ds->getBaseEnglishDate())->toBe('')
+            ->and($ds->getEquivalentNepaliDate())->toBe('');
+    });
 
-    public function test_make_seeded_from_rows(): void
-    {
+    it('creates from seeded rows', function (): void {
         $ds = DataSet::make([2000 => $this->validRow]);
 
-        $this->assertSame(1, $ds->count());
-        $this->assertSame($this->validRow, iterator_to_array($ds)[2000]);
-    }
+        expect($ds->count())->toBe(1)
+            ->and(iterator_to_array($ds)[2000])->toBe($this->validRow);
+    });
 
-    public function test_add_row_and_add_rows_upsert(): void
-    {
+    it('accepts custom base dates in constructor', function (): void {
+        $ds = new DataSet([2000 => $this->validRow], '1944/01/01', '2000/09/17');
+
+        expect($ds->years())->toBe([2000])
+            ->and($ds->getBaseEnglishDate())->toBe('1944/01/01')
+            ->and($ds->getEquivalentNepaliDate())->toBe('2000/09/17');
+    });
+
+    it('accepts custom base dates in make()', function (): void {
+        $ds = DataSet::make([2001 => $this->validRow2], '1945-2-3', '2001-10-5');
+
+        expect($ds->years())->toBe([2001])
+            ->and($ds->getBaseEnglishDate())->toBe('1945-2-3')
+            ->and($ds->getEquivalentNepaliDate())->toBe('2001-10-5');
+    });
+});
+
+describe('Row mutators', function (): void {
+    it('addRow and addRows upsert', function (): void {
         $ds = DataSet::make()
             ->addRow(2000, $this->validRow)
             ->addRow(2001, $this->validRow2);
 
-        $rows = iterator_to_array($ds);
-        $this->assertSame($this->validRow, $rows[2000]);
-
         $replacement = [29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29];
         $ds->addRow(2000, $replacement);
 
-        $rows = iterator_to_array($ds);
-        $this->assertSame($replacement, $rows[2000]);
-        $this->assertSame(2, $ds->count());
+        expect(iterator_to_array($ds)[2000])->toBe($replacement)
+            ->and($ds->count())->toBe(2);
 
         $ds->addRows([2002 => $this->validRow, 2003 => $this->validRow2]);
-        $this->assertSame(4, $ds->count());
-        $this->assertSame([2000, 2001, 2002, 2003], $ds->years());
-    }
 
-    public function test_rows_stay_sorted_by_year(): void
-    {
+        expect($ds->count())->toBe(4)
+            ->and($ds->years())->toBe([2000, 2001, 2002, 2003]);
+    });
+
+    it('keeps rows sorted by year', function (): void {
         $ds = DataSet::make()
             ->addRow(2005, $this->validRow)
             ->addRow(2001, $this->validRow)
             ->addRow(2003, $this->validRow);
 
-        $this->assertSame([2001, 2003, 2005], $ds->years());
-    }
+        expect($ds->years())->toBe([2001, 2003, 2005]);
+    });
 
-    public function test_append_single_and_many(): void
-    {
+    it('appends single and multiple rows', function (): void {
         $ds = DataSet::make([2000 => $this->validRow])
             ->append(2001, $this->validRow2)
             ->appendRows([2002 => $this->validRow, 2003 => $this->validRow2]);
 
-        $this->assertSame([2000, 2001, 2002, 2003], $ds->years());
-    }
+        expect($ds->years())->toBe([2000, 2001, 2002, 2003]);
+    });
 
-    public function test_prepend_single_and_many(): void
-    {
+    it('prepends single and multiple rows', function (): void {
         $ds = DataSet::make([2000 => $this->validRow])
             ->prepend(1999, $this->validRow2)
             ->prependRows([1997 => $this->validRow, 1998 => $this->validRow2]);
 
-        $this->assertSame([1997, 1998, 1999, 2000], $ds->years());
-    }
+        expect($ds->years())->toBe([1997, 1998, 1999, 2000]);
+    });
 
-    public function test_append_to_empty(): void
-    {
-        $ds = DataSet::make()->append(2000, $this->validRow);
+    it('appends to empty dataset', function (): void {
+        expect(DataSet::make()->append(2000, $this->validRow)->years())->toBe([2000]);
+    });
 
-        $this->assertSame([2000], $ds->years());
-    }
+    it('prepends to empty dataset', function (): void {
+        expect(DataSet::make()->prepend(2000, $this->validRow)->years())->toBe([2000]);
+    });
 
-    public function test_prepend_to_empty(): void
-    {
-        $ds = DataSet::make()->prepend(2000, $this->validRow);
-
-        $this->assertSame([2000], $ds->years());
-    }
-
-    public function test_append_rejects_year_not_after_last(): void
-    {
-        $ds = DataSet::make([2005 => $this->validRow]);
-
-        $this->expectException(InvalidDataSetException::class);
-        $ds->append(2004, $this->validRow);
-    }
-
-    public function test_prepend_rejects_year_not_before_first(): void
-    {
-        $ds = DataSet::make([2005 => $this->validRow]);
-
-        $this->expectException(InvalidDataSetException::class);
-        $ds->prepend(2006, $this->validRow);
-    }
-
-    public function test_append_rejects_duplicate_year(): void
-    {
-        $ds = DataSet::make([2005 => $this->validRow, 2006 => $this->validRow]);
-
-        $this->expectException(InvalidDataSetException::class);
-        $ds->append(2005, $this->validRow);
-    }
-
-    public function test_prepend_rejects_duplicate_year(): void
-    {
-        $ds = DataSet::make([2005 => $this->validRow, 2006 => $this->validRow]);
-
-        $this->expectException(InvalidDataSetException::class);
-        $ds->prepend(2006, $this->validRow);
-    }
-
-    public function test_add_row_rejects_invalid_month_count(): void
-    {
+    it('mutators are fluent', function (): void {
         $ds = DataSet::make();
+        $returned = $ds->addRow(2000, $this->validRow)->append(2001, $this->validRow2);
 
-        $this->expectException(InvalidDataSetException::class);
-        $ds->addRow(2000, [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29]);
-    }
+        expect($returned)->toBe($ds)
+            ->and($ds->count())->toBe(2);
+    });
 
-    public function test_add_row_rejects_day_out_of_range(): void
-    {
-        $ds = DataSet::make();
+    it('supports non-sequential years', function (): void {
+        $ds = DataSet::make()
+            ->addRow(2000, $this->validRow)
+            ->addRow(2005, $this->validRow2);
 
-        $this->expectException(InvalidDataSetException::class);
-        $ds->addRow(2000, [28, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31]);
-    }
+        expect($ds->years())->toBe([2000, 2005]);
+    });
+});
 
-    public function test_add_row_rejects_non_int_day(): void
-    {
-        $ds = DataSet::make();
+describe('Row validation', function (): void {
+    it('rejects append year not after last', function (): void {
+        DataSet::make([2005 => $this->validRow])->append(2004, $this->validRow);
+    })->throws(InvalidDataSetException::class);
 
-        $this->expectException(InvalidDataSetException::class);
-        $ds->addRow(2000, [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, '31']);
-    }
+    it('rejects prepend year not before first', function (): void {
+        DataSet::make([2005 => $this->validRow])->prepend(2006, $this->validRow);
+    })->throws(InvalidDataSetException::class);
 
-    public function test_is_iterable_by_year(): void
-    {
+    it('rejects invalid month count', function (): void {
+        DataSet::make()->addRow(2000, [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29]);
+    })->throws(InvalidDataSetException::class);
+
+    it('rejects day count out of range', function (): void {
+        DataSet::make()->addRow(2000, [28, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31]);
+    })->throws(InvalidDataSetException::class);
+
+    it('rejects non-integer day count', function (): void {
+        DataSet::make()->addRow(2000, [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, '31']);
+    })->throws(InvalidDataSetException::class);
+});
+
+describe('Iteration & serialization', function (): void {
+    it('iterates by year', function (): void {
         $ds = DataSet::make([2000 => $this->validRow, 2001 => $this->validRow2]);
 
         $seen = [];
@@ -161,141 +147,53 @@ class DataSetTest extends TestCase
             $seen[$year] = $monthDays;
         }
 
-        $this->assertSame([2000 => $this->validRow, 2001 => $this->validRow2], $seen);
-    }
+        expect($seen)->toBe([2000 => $this->validRow, 2001 => $this->validRow2]);
+    });
 
-    public function test_serialize_round_trip(): void
-    {
-        $original = DataSet::make([2001 => $this->validRow2]);
+    it('round-trips through serialize/unserialize', function (): void {
+        $original = DataSet::make([2001 => $this->validRow2], '1944/01/01', '2000/09/17');
 
         $restored = unserialize(serialize($original));
 
-        $this->assertInstanceOf(DataSet::class, $restored);
-        $this->assertSame(iterator_to_array($original), iterator_to_array($restored));
-        $this->assertSame($original->getBaseEnglishDate(), $restored->getBaseEnglishDate());
-        $this->assertSame($original->getEquivalentNepaliDate(), $restored->getEquivalentNepaliDate());
-    }
+        expect($restored)->toBeInstanceOf(DataSet::class)
+            ->and(iterator_to_array($restored))->toBe(iterator_to_array($original))
+            ->and($restored->getBaseEnglishDate())->toBe('1944/01/01')
+            ->and($restored->getEquivalentNepaliDate())->toBe('2000/09/17');
+    });
+});
 
-    public function test_serializable_interface_round_trip(): void
-    {
-        $original = DataSet::make([2000 => $this->validRow]);
-
-        $restored = new DataSet;
-        $restored->unserialize($original->serialize());
-
-        $this->assertSame(iterator_to_array($original), iterator_to_array($restored));
-    }
-
-    public function test_mutators_are_fluent_and_mutable(): void
-    {
-        $ds = DataSet::make();
-
-        $returned = $ds
-            ->addRow(2000, $this->validRow)
-            ->append(2001, $this->validRow2);
-
-        $this->assertSame($ds, $returned);
-        $this->assertSame(2, $ds->count());
-    }
-
-    public function test_non_sequential_years_supported(): void
-    {
-        $ds = DataSet::make()
-            ->addRow(2000, $this->validRow)
-            ->addRow(2005, $this->validRow2);
-
-        $this->assertSame([2000, 2005], $ds->years());
-    }
-
-    public function test_count_years_and_empty_transitions(): void
-    {
-        $ds = DataSet::make()
-            ->addRow(2000, $this->validRow)
-            ->addRow(2001, $this->validRow2);
-
-        $this->assertSame(2, $ds->count());
-
-        $empty = DataSet::make();
-
-        $this->assertTrue($empty->isEmpty());
-        $this->assertSame(0, $empty->count());
-    }
-
-    public function test_constructor_accepts_custom_rows_and_base_dates(): void
-    {
-        $ds = new DataSet([2000 => $this->validRow], '1944/01/01', '2000/09/17');
-
-        $this->assertSame([2000], $ds->years());
-        $this->assertSame('1944/01/01', $ds->getBaseEnglishDate());
-        $this->assertSame('2000/09/17', $ds->getEquivalentNepaliDate());
-    }
-
-    public function test_make_accepts_custom_rows_and_base_dates(): void
-    {
-        $ds = DataSet::make([2001 => $this->validRow2], '1945-2-3', '2001-10-5');
-
-        $this->assertSame([2001], $ds->years());
-        $this->assertSame('1945-2-3', $ds->getBaseEnglishDate());
-        $this->assertSame('2001-10-5', $ds->getEquivalentNepaliDate());
-    }
-
-    public function test_make_is_late_static_bound(): void
-    {
+describe('Subclass support', function (): void {
+    it('make() is late-static-bound', function (): void {
         $ds = TinyCustomDataSet::make();
 
-        $this->assertInstanceOf(TinyCustomDataSet::class, $ds);
-        $this->assertSame([2000], $ds->years());
-        $this->assertSame('2000/01/01', $ds->getBaseEnglishDate());
-        $this->assertSame('2000/01/01', $ds->getEquivalentNepaliDate());
-    }
+        expect($ds)->toBeInstanceOf(TinyCustomDataSet::class)
+            ->and($ds->years())->toBe([2000])
+            ->and($ds->getBaseEnglishDate())->toBe('2000/01/01');
+    });
 
-    public function test_subclass_can_override_defaults(): void
-    {
+    it('subclass can override defaults', function (): void {
         $ds = new TinyCustomDataSet;
 
-        $this->assertInstanceOf(DataSet::class, $ds);
-        $this->assertSame([2000], $ds->years());
-        $this->assertSame('2000/01/01', $ds->getBaseEnglishDate());
-    }
+        expect($ds)->toBeInstanceOf(DataSet::class)
+            ->and($ds->years())->toBe([2000])
+            ->and($ds->getBaseEnglishDate())->toBe('2000/01/01');
+    });
 
-    public function test_subclass_can_override_base_dates_explicitly(): void
-    {
-        $ds = new TinyCustomDataSet([2000 => $this->validRow], '1999/12/31', '2000/01/01');
-
-        $this->assertSame('1999/12/31', $ds->getBaseEnglishDate());
-        $this->assertSame($this->validRow, iterator_to_array($ds)[2000]);
-    }
-
-    public function test_subclass_fluent_mutators_return_same_instance(): void
-    {
+    it('subclass fluent mutators return same instance', function (): void {
         $ds = new TinyCustomDataSet;
-
         $returned = $ds->addRow(2001, $this->validRow2);
 
-        $this->assertSame($ds, $returned);
-        $this->assertInstanceOf(TinyCustomDataSet::class, $returned);
-        $this->assertSame([2000, 2001], $ds->years());
-    }
+        expect($returned)->toBe($ds)
+            ->and($returned)->toBeInstanceOf(TinyCustomDataSet::class)
+            ->and($ds->years())->toBe([2000, 2001]);
+    });
 
-    public function test_custom_base_dates_survive_serialization(): void
-    {
-        $original = DataSet::make([2000 => $this->validRow], '1944/01/01', '2000/09/17');
-
-        $restored = unserialize(serialize($original));
-
-        $this->assertSame('1944/01/01', $restored->getBaseEnglishDate());
-        $this->assertSame('2000/09/17', $restored->getEquivalentNepaliDate());
-        $this->assertSame(iterator_to_array($original), iterator_to_array($restored));
-    }
-
-    public function test_subclass_serializes_and_restores_as_subclass(): void
-    {
+    it('subclass serializes and restores as subclass', function (): void {
         $original = new TinyCustomDataSet;
 
         $restored = unserialize(serialize($original));
 
-        $this->assertInstanceOf(TinyCustomDataSet::class, $restored);
-        $this->assertSame($original->getBaseEnglishDate(), $restored->getBaseEnglishDate());
-        $this->assertSame(iterator_to_array($original), iterator_to_array($restored));
-    }
-}
+        expect($restored)->toBeInstanceOf(TinyCustomDataSet::class)
+            ->and($restored->getBaseEnglishDate())->toBe($original->getBaseEnglishDate());
+    });
+});

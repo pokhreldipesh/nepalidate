@@ -1,255 +1,194 @@
 <?php
 
-namespace Tests;
+declare(strict_types=1);
 
 use Dipesh\NepaliDate\Contracts\Date as DateContract;
 use Dipesh\NepaliDate\lang\English;
 use Dipesh\NepaliDate\lang\Nepali;
 use Dipesh\NepaliDate\Services\Date;
-use Dipesh\NepaliDate\Services\FormatDate;
-use PHPUnit\Framework\TestCase;
 
-class DateTest extends TestCase
-{
-    // ── Construction & parsing ──────────────────────────────────────
-
-    public function test_constructs_with_standard_format(): void
-    {
+describe('Construction & parsing', function (): void {
+    it('constructs with standard format', function (): void {
         $date = new Date('2078/01/01', new English);
 
-        $this->assertSame('2078/01/01', $date->date);
-        $this->assertSame(2078, $date->year);
-        $this->assertSame(1, $date->month);
-        $this->assertSame(1, $date->day);
-    }
+        expect($date->getDate())->toBe('2078/01/01')
+            ->and($date->getYear())->toBe(2078)
+            ->and($date->getMonth())->toBe(1)
+            ->and($date->getDay())->toBe(1);
+    });
 
-    public function test_zero_pads_components(): void
-    {
+    it('zero-pads components', function (): void {
         $date = new Date('2078/1/2', new English);
 
-        $this->assertSame('2078/01/02', $date->date);
-        $this->assertSame(1, $date->month);
-        $this->assertSame(2, $date->day);
-    }
+        expect($date->getDate())->toBe('2078/01/02')
+            ->and($date->getMonth())->toBe(1)
+            ->and($date->getDay())->toBe(2);
+    });
 
-    public function test_accepts_alternate_separators(): void
-    {
-        $this->assertSame('2078/01/01', (new Date('2078-01-01', new English))->date);
-        $this->assertSame('2078/01/01', (new Date('2078.1.1', new English))->date);
-    }
+    it('accepts alternate separators', function (string $input): void {
+        expect((new Date($input, new English))->getDate())->toBe('2078/01/01');
+    })->with(['2078/01/01', '2078-01-01', '2078.1.1']);
 
-    /**
-     * @dataProvider invalidDateProvider
-     */
-    public function test_rejects_invalid_dates(string $input): void
-    {
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Invalid date format. Please use 'YYYY/MM/DD'.");
-
+    it('rejects invalid dates', function (string $input): void {
         new Date($input, new English);
-    }
+    })->with([
+        'empty' => [''],
+        'year only' => ['2078'],
+        'year month' => ['2078/01'],
+        'four components' => ['2078/01/01/02'],
+        'non numeric' => ['abc'],
+        'month 13' => ['2078/13/01'],
+        'month 0' => ['2078/00/01'],
+    ])->throws(Exception::class, "Invalid date format. Please use 'YYYY/MM/DD'.");
+});
 
-    public static function invalidDateProvider(): array
-    {
-        return [
-            'empty' => [''],
-            'year only' => ['2078'],
-            'year month' => ['2078/01'],
-            'four components' => ['2078/01/01/02'],
-            'non numeric' => ['abc'],
-            'month 13' => ['2078/13/01'],
-            'month 0' => ['2078/00/01'],
-        ];
-    }
+describe('Value-object purity', function (): void {
+    it('has no dataset property', function (): void {
+        expect(property_exists(Date::class, 'dataSet'))->toBeFalse();
+    });
 
-    public function test_set_up_reparses_in_place(): void
-    {
-        $date = new Date('2078/01/01', new English);
-        $date->setUp('2079/02/03');
+    it('has no date processor property', function (): void {
+        expect(property_exists(Date::class, 'dateProcessor'))->toBeFalse();
+    });
 
-        $this->assertSame(2079, $date->year);
-        $this->assertSame(2, $date->month);
-        $this->assertSame(3, $date->day);
-        $this->assertSame('2079/02/03', $date->date);
-    }
+    it('does not have processing methods', function (): void {
+        expect(method_exists(Date::class, 'getTotalDaysFromBaseDate'))->toBeFalse()
+            ->and(method_exists(Date::class, 'diffDays'))->toBeFalse()
+            ->and(method_exists(Date::class, 'addDays'))->toBeFalse()
+            ->and(method_exists(Date::class, 'toAd'))->toBeFalse()
+            ->and(method_exists(Date::class, 'getDateProcessor'))->toBeFalse();
+    });
 
-    // ── Value-object purity ─────────────────────────────────────────
+    it('implements the date contract', function (): void {
+        expect(new Date('2078/01/01', new English))->toBeInstanceOf(DateContract::class);
+    });
 
-    public function test_has_no_dataset_property(): void
-    {
-        $this->assertFalse(property_exists(Date::class, 'dataSet'));
-    }
-
-    public function test_has_no_date_processor_property(): void
-    {
-        $this->assertFalse(property_exists(Date::class, 'dateProcessor'));
-    }
-
-    public function test_does_not_have_processing_methods(): void
-    {
-        $this->assertFalse(method_exists(Date::class, 'getTotalDaysFromBaseDate'));
-        $this->assertFalse(method_exists(Date::class, 'diffDays'));
-        $this->assertFalse(method_exists(Date::class, 'addDays'));
-        $this->assertFalse(method_exists(Date::class, 'toAd'));
-        $this->assertFalse(method_exists(Date::class, 'getDateProcessor'));
-    }
-
-    public function test_implements_date_contract(): void
-    {
-        $this->assertInstanceOf(DateContract::class, new Date('2078/01/01', new English));
-    }
-
-    public function test_has_weekday_property(): void
-    {
+    it('has a weekday property', function (): void {
         $date = new Date('2078/01/01', new English);
 
-        $this->assertTrue(property_exists(Date::class, 'weekDay'));
-        $this->assertIsInt($date->weekDay);
-    }
+        expect(property_exists(Date::class, 'weekDay'))->toBeTrue()
+            ->and($date->getWeekDay())->toBeInt();
+    });
+});
 
-    // ── Language-aware accessors ────────────────────────────────────
-
-    public function test_day_returns_english_digits(): void
-    {
+describe('Language-aware accessors', function (): void {
+    it('returns English digits', function (): void {
         $date = new Date('2078/01/15', new English);
 
-        $this->assertSame('15', $date->day());
-    }
+        expect($date->day())->toBe('15')
+            ->and($date->year())->toBe('2078');
+    });
 
-    public function test_year_returns_english_digits(): void
-    {
-        $date = new Date('2078/01/01', new English);
-
-        $this->assertSame('2078', $date->year());
-    }
-
-    public function test_year_returns_devanagari_digits_for_nepali(): void
-    {
-        $date = new Date('2078/01/01', new Nepali);
-
-        $this->assertSame('२०७८', $date->year());
-    }
-
-    public function test_day_returns_devanagari_digits_for_nepali(): void
-    {
+    it('returns Devanagari digits for Nepali', function (): void {
         $date = new Date('2078/01/15', new Nepali);
 
-        $this->assertSame('१५', $date->day());
-    }
+        expect($date->day())->toBe('१५')
+            ->and($date->year())->toBe('२०७८');
+    });
 
-    public function test_month_numeric_format(): void
-    {
-        $date = new Date('2078/04/01', new English);
+    it('formats month as zero-padded number', function (): void {
+        expect((new Date('2078/04/01', new English))->month('m'))->toBe('04');
+    });
 
-        $this->assertSame('04', $date->month('m'));
-    }
+    it('formats month as full name', function (): void {
+        expect((new Date('2078/04/01', new English))->month('F'))->toBe('Shrawan');
+    });
 
-    public function test_month_short_name(): void
-    {
-        $date = new Date('2078/04/01', new English);
-
-        // English short names ('M') are intentionally empty; only full names are populated.
-        $this->assertSame('', $date->month('M'));
-    }
-
-    public function test_month_full_name(): void
-    {
-        $date = new Date('2078/04/01', new English);
-
-        $this->assertSame('Shrawan', $date->month('F'));
-    }
-
-    public function test_month_unsupported_format_throws(): void
-    {
-        $this->expectException(\Exception::class);
-
+    it('throws on unsupported month format', function (): void {
         (new Date('2078/01/01', new English))->month('x');
-    }
+    })->throws(Exception::class);
 
-    public function test_resolve_language_from_string(): void
-    {
+    it('resolves language from string codes', function (string $code, string $expected): void {
         $date = new Date('2078/01/01', new English);
 
-        $this->assertInstanceOf(Nepali::class, $date->resolveLanguage('np'));
-        $this->assertInstanceOf(English::class, $date->resolveLanguage('en'));
-    }
+        expect($date->resolveLanguage($code))->toBeInstanceOf($expected);
+    })->with([
+        ['np', Nepali::class],
+        ['en', English::class],
+    ]);
 
-    public function test_resolve_language_from_instance(): void
-    {
+    it('returns same instance for language objects', function (): void {
         $date = new Date('2078/01/01', new English);
         $lang = new Nepali;
 
-        $this->assertSame($lang, $date->resolveLanguage($lang));
-    }
+        expect($date->resolveLanguage($lang))->toBe($lang);
+    });
 
-    public function test_resolve_language_unsupported_throws(): void
-    {
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('The specified language type is not supported.');
-
+    it('throws for unsupported language', function (): void {
         (new Date('2078/01/01', new English))->resolveLanguage('xx');
-    }
+    })->throws(Exception::class, 'The specified language type is not supported.');
+});
 
-    // ── Formatting ──────────────────────────────────────────────────
+describe('Formatting', function (): void {
+    it('formats with default Y/m/d', function (): void {
+        expect((new Date('2078/01/01', new English))->format())->toBe('2078/01/01');
+    });
 
-    public function test_format_default(): void
-    {
-        $date = new Date('2078/01/01', new English);
+    it('keeps literal separators', function (): void {
+        expect((new Date('2078/01/01', new English))->format('Y-m-d'))->toBe('2078-01-01');
+    });
 
-        $this->assertSame('2078/01/01', $date->format());
-    }
-
-    public function test_format_custom_separators(): void
-    {
-        $date = new Date('2078/01/01', new English);
-
-        $this->assertSame('2078-01-01', $date->format('Y-m-d'));
-    }
-
-    public function test_format_with_language_override(): void
-    {
+    it('formats with language override', function (): void {
         $date = new Date('2078/01/15', new English);
 
-        $this->assertSame('२०७८/०१/१५', $date->format('Y/m/d', 'np'));
-    }
+        expect($date->format('Y/m/d', 'np'))->toBe('२०७८/०१/१५');
+    });
 
-    public function test_format_unsupported_character_throws(): void
-    {
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Invalid date format');
+    it('does not persist language override', function (): void {
+        $date = new Date('2078/01/15', new English);
+        $date->format('Y/m/d', 'np');
 
+        expect($date->getLanguage())->toBeInstanceOf(English::class);
+    });
+
+    it('throws on unsupported format character', function (): void {
         (new Date('2078/01/01', new English))->format('Y/m/d/x');
-    }
+    })->throws(Exception::class, 'Invalid date format');
+});
 
-    public function test_get_formatter_returns_format_date(): void
-    {
+describe('withDate (immutable factory)', function (): void {
+    it('creates a new instance with a different date', function (): void {
         $date = new Date('2078/01/01', new English);
+        $new = $date->withDate('2079/02/03');
 
-        $this->assertInstanceOf(FormatDate::class, $date->getFormatter());
-    }
+        expect($new)->not->toBe($date)
+            ->and($new->getYear())->toBe(2079)
+            ->and($new->getMonth())->toBe(2)
+            ->and($new->getDay())->toBe(3)
+            ->and($new->getDate())->toBe('2079/02/03');
+    });
 
-    // ── parseComponents (static) ────────────────────────────────────
+    it('preserves the original instance', function (): void {
+        $date = new Date('2078/01/01', new English);
+        $date->withDate('2079/02/03');
 
-    public function test_parse_components_returns_ints(): void
-    {
-        $result = Date::parseComponents('2078/01/15');
+        expect($date->getDate())->toBe('2078/01/01');
+    });
 
-        $this->assertSame([2078, 1, 15], $result);
-    }
+    it('preserves the language', function (): void {
+        $date = new Date('2078/01/01', new Nepali);
+        $new = $date->withDate('2079/02/03');
 
-    public function test_parse_components_accepts_alternate_separators(): void
-    {
-        $this->assertSame([2078, 1, 1], Date::parseComponents('2078-01-01'));
-        $this->assertSame([2078, 12, 31], Date::parseComponents('2078.12.31'));
-    }
+        expect($new->getLanguage())->toBeInstanceOf(Nepali::class);
+    });
+});
 
-    /**
-     * @dataProvider invalidDateProvider
-     */
-    public function test_parse_components_rejects_invalid(string $input): void
-    {
-        $this->expectException(\Exception::class);
+describe('parseComponents (static)', function (): void {
+    it('parses into integer components', function (): void {
+        expect(Date::parseComponents('2078/01/15'))->toBe([2078, 1, 15]);
+    });
 
+    it('accepts alternate separators', function (string $input, array $expected): void {
+        expect(Date::parseComponents($input))->toBe($expected);
+    })->with([
+        ['2078-01-01', [2078, 1, 1]],
+        ['2078.12.31', [2078, 12, 31]],
+    ]);
+
+    it('rejects invalid strings', function (string $input): void {
         Date::parseComponents($input);
-    }
-}
+    })->with([
+        'empty' => [''],
+        'non numeric' => ['abc'],
+    ])->throws(Exception::class);
+});

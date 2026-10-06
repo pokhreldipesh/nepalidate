@@ -16,6 +16,11 @@ use Serializable;
  * Initialize with your own rows, or extend this class to ship a custom dataset.
  * The packaged system calendar lives on SystemDataSet.
  */
+/**
+ * @implements IteratorAggregate<int, array<int, int>>
+ *
+ * @phpstan-consistent-constructor
+ */
 class DataSet implements IteratorAggregate, Serializable
 {
     /**
@@ -248,7 +253,7 @@ class DataSet implements IteratorAggregate, Serializable
     /**
      * Validate a year row: year > 0, exactly 12 ints with day-counts 29-32.
      *
-     * @param  array<int, int>  $monthDays
+     * @param  array<int, mixed>  $monthDays
      */
     private function assertValidRow(int $year, array $monthDays): void
     {

@@ -2,6 +2,66 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
+## [Unreleased] — Rector + PHPStan
+
+### Added
+
+- **`rector.php`** — Rector config: PHP 8.0 sets, code quality, dead code, early return, type declaration rules.
+- **`phpstan.neon`** — PHPStan level 8 config for `src/`.
+- **`composer.json`** — new scripts: `stan`, `rector`, `check` (lint + stan + test).
+
+### Changed
+
+- **Rector applied to all source + test files** — `declare(strict_types=1)`, constructor property promotion, closure return types, `Stringable` interface on `NepaliDate`, `@phpstan-consistent-constructor` annotations, import cleanup.
+- **PHPStan level 8 passes** — fixed `preg_replace_callback` return types, removed redundant `is_int()` (with adjusted PHPDoc), added `IteratorAggregate` generics.
+
+## [Unreleased] — Test suite rewritten with Pest
+
+### Changed
+
+- **Tests** — all test files rewritten from PHPUnit classes to Pest style (`describe`/`it`/`expect`). 103 tests, 180 assertions.
+  - `tests/DateTest.php` — construction, parsing, value-object purity, language accessors, formatting, `withDate`, `parseComponents`
+  - `tests/NepaliDateTest.php` — formatting (EN/NP), factories, mutable `setUp`, weekday
+  - `tests/ComparisonTest.php` — manipulation (`addDays`/`subDays`), comparison, `diffDays`
+  - `tests/DateConversionTest.php` — AD ↔ BS conversion, round-trips
+  - `tests/DataSetTest.php` — creation, mutators, validation, iteration, serialization, subclasses
+  - `tests/DataSetIntegrationTest.php` — DateProcessor + NepaliDate with custom datasets, SystemDataSet
+- **`composer.json`** — test script now runs Pest (`vendor/bin/pest tests`). Added `pestphp/pest` dev dependency.
+
+## [Unreleased] — Full maintainability refactor
+
+### Changed
+
+- **`src/lang/English.php`**, **`src/lang/Nepali.php`** — language data moved from `public static` properties to `private`/`public` class constants. Classes are now fully immutable (no mutable state). Added `@return` array shape annotations.
+- **`src/Contracts/Language.php`** — added docblocks with `@param` / `@return` array shapes for `getWeek()` and `getMonth()`.
+- **`src/Services/DateProcessor.php`** — no longer depends on `Date::$defaultOutputFormat` (has own `DATE_FORMAT` constant). `getDaysFromBase` uses `self::parseYmd` on the active calendar's base date. Cleaner control flow in `getDateFromDays`.
+- **`src/Services/FormatDate.php`** — `processFormatChar` uses named `const` arrays (`WEEKDAY_FORMATS`, `MONTH_FORMATS`). Explicit 'Y' fallback in `match`.
+- **`src/Services/Formatter.php`** — abstract base renamed from `AbstractFormatter`. `formatNumber()` casts digit match to `int`. Cleaner `validateSupportedFormats`.
+- **`src/Services/Date.php`** — `format()` with `$lang` override is temporary (uses try/finally to restore language — instance unchanged after call).
+- **`src/EnDate.php`** — all arithmetic methods (`addDays`, `subDays`, `addMonths`, `subMonths`, `addYears`, `subYears`) now return **new instances** (immutable). Removed unnecessary `format()` override. `diffDays()` returns `int` (was `false|int`). Constructor `string $timezone` (was untyped).
+
+## [Unreleased] — Formatter system refactor
+
+### Added
+
+- **`src/Services/Formatter.php`** — abstract base class for formatters. Takes `Date` on construct, provides shared `formatNumber()` and `validateSupportedFormats()`.
+
+### Changed
+
+- **`src/Contracts/Formatter.php`** — `setUp()` removed; `formatNumber` signature widened to `int|string`.
+- **`src/Services/FormatDate.php`** — extends `AbstractFormatter`. No `setUp()`. Reads date state live from `$this->date`. `processFormatChar` uses `match` instead of nested `if`.
+- **`src/Services/Date.php`** — `getFormatter()` passes `$this` to `FormatDate`. `assignDate()` recreates formatter. `format()` no longer calls `formatter->setUp()`. Added `__clone()` to recreate formatter on clone.
+- **`src/NepaliDate.php`** — `setLang()` recreates formatter instead of `formatter->setUp()`.
+
+## [Unreleased] — Immutable Date + withDate pattern
+
+### Changed
+
+- **`src/Services/Date.php`** — now immutable: `setUp()` removed. Constructor fully initializes. `withDate(string): static` returns a new instance. `assignDate()` is `protected` for subclass use.
+- **`src/NepaliDate.php`** — adds `setUp()` as public mutator (re-parses + recomputes weekDay). `withDate()` overrides to preserve DataSet and recompute weekDay. `create()` uses `withDate()`.
+- **`src/Concerns/HasDateManipulation.php`** — `addDays()` uses `withDate()` instead of `clone + setUp()`.
+- **`src/Contracts/Date.php`** — `setUp()` removed; `withDate(string): static` added.
+
 ## [Unreleased] — Date rewrite as pure value object
 
 ### Changed

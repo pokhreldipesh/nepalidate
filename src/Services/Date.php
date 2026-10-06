@@ -15,6 +15,9 @@ use Exception;
  * Delegates formatting to a Formatter. Contains no calendar arithmetic,
  * no DataSet, and no DateProcessor — those live on NepaliDate.
  */
+/**
+ * @phpstan-consistent-constructor
+ */
 class Date implements \Dipesh\NepaliDate\Contracts\Date
 {
     /**
@@ -66,30 +69,51 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     public function __construct(string $date, Language $language)
     {
         $this->language = $this->resolveLanguage($language);
+        $this->assignDate($date);
+    }
+
+    /**
+     * Ensure clones get a fresh formatter bound to the clone, not the original.
+     */
+    public function __clone(): void
+    {
         $this->formatter = $this->getFormatter();
-        $this->setUp($date);
+    }
+
+    /**
+     * Create a new instance with a different date, preserving language.
+     *
+     * @throws Exception If the date format is invalid.
+     */
+    public function withDate(string $date): static
+    {
+        return new static($date, $this->language);
     }
 
     /**
      * Parse and assign date components from a date string.
      *
+     * Also creates a fresh formatter bound to this instance.
+     * Called by the constructor. Subclasses may call this from
+     * their own mutation methods (e.g. NepaliDate::setUp).
+     *
      * @param  string  $date  Date string to parse.
      *
      * @throws Exception If the date format is invalid.
      */
-    public function setUp(string $date): void
+    protected function assignDate(string $date): void
     {
         [$this->year, $this->month, $this->day] = self::parseComponents($date);
         $this->date = sprintf(self::$defaultOutputFormat, $this->year, $this->month, $this->day);
-        $this->formatter->setUp($this);
+        $this->formatter = $this->getFormatter();
     }
 
     /**
-     * Create a new Formatter instance.
+     * Create a Formatter bound to this date instance.
      */
     public function getFormatter(): Formatter
     {
-        return new FormatDate;
+        return new FormatDate($this);
     }
 
     /**
@@ -214,20 +238,30 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     /**
      * Format the date according to a format string.
      *
-     * Supported characters: Y, m, M, F, d, g.
-     * Weekday characters (w, D, l) require a date object with weekday support (NepaliDate).
+     * Supported characters: Y, m, M, F, d, w, D, l, g.
+     * The optional $lang override is temporary — the instance's
+     * language is unchanged after the call.
      *
      * @param  string  $format  Format string.
      * @param  string|Language|null  $lang  Optional language override.
      *
-     * @throws Exception If the format is invalid or contains weekday tokens on a plain Date.
+     * @throws Exception If the format is invalid.
      */
     public function format(string $format = 'Y/m/d', string|Language|null $lang = null): string
     {
-        if ($lang) {
-            $this->language = $this->resolveLanguage($lang);
+        if ($lang === null) {
+            return $this->formatter->format($format);
         }
 
-        return $this->formatter->setUp($this)->format($format);
+        $originalLanguage = $this->language;
+        $this->language = $this->resolveLanguage($lang);
+        $this->formatter = $this->getFormatter();
+
+        try {
+            return $this->formatter->format($format);
+        } finally {
+            $this->language = $originalLanguage;
+            $this->formatter = $this->getFormatter();
+        }
     }
 }

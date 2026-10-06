@@ -1,54 +1,138 @@
 # Nepali Date
 
-The Nepali Date package is designed for working with the Nepali calendar. It provides functionality for converting dates between the English (AD) and Nepali (BS) calendars, along with a wide range of methods for handling and manipulating Nepali dates. This comprehensive tool facilitates seamless integration and operations within the Nepali calendar system.
+Nepali (BS) calendar dates for PHP (>= 8.0). Convert between English (AD) and Nepali (BS) calendars, format dates in English or Devanagari, compare and manipulate dates, and plug in custom calendars.
 
 ## Installation
 
-To install the package, use Composer:
-
-```
+```bash
 composer require dipesh/nepali-date
 ```
 
-### Uses
-
-Creating Instances
+## Quick Start
 
 ```php
 use Dipesh\NepaliDate\NepaliDate;
 
-$date = new NepaliDate(language: 'np or en'); // Creates current date instance with provided language.
+$date = NepaliDate::make('2081-04-25');
+echo $date->format('Y F d g l'); // 2081 Shrawan 25 Gate Sukrabar
 
-//or
-$date = $date->setLang('np') or $date->setLang(new \Dipesh\NepaliDate\lang\Nepali()) // Creates immutable instance
-
-//or
-$date = new NepaliDate("2050-8-10") // Creates date instance with default language configuration
-//You are free to use either of these formats, e.g., yyyy-mm-dd or yyyy/mm/dd." 
-//or
-$date = NepaliDate::make("2070-8-20"); // Creates date instance with default language configuration
-
-//or
-$date = NepaliDate::now(); // Creates current date instance
-
-// Work with global instance
-$date->create($date); // Creates an immutable date instance while retaining the previous configuration settings.
-
+$date->setLang('np')->format('Y F d g l'); // २०८१ साउन २५ गते शुक्रबार
 ```
 
-### Date Conversion
+## Creating Instances
 
 ```php
-$date->toAd(); // creates php Date instance
-//or
-$date = NepaliDate::fromADDate("1990-9-10");
+use Dipesh\NepaliDate\NepaliDate;
+
+// Current date
+$date = NepaliDate::now();
+
+// From a BS date string (flexible separators: / - .)
+$date = NepaliDate::make('2081/04/25');
+$date = new NepaliDate('2081-04-25');
+
+// From an AD (Gregorian) date
+$date = NepaliDate::fromADDate('2024/08/08');
+
+// Immutable: create a new date from an existing one
+$other = $date->create('2082/01/01');
+
+// Immutable: switch language
+$np = $date->setLang('np');
+$np = $date->setLang(new \Dipesh\NepaliDate\lang\Nepali);
 ```
 
-### Calendar DataSet
+## Date Conversion
 
-By default the package uses the packaged Nepali calendar. Pass your own calendar data to any conversion API to work with a custom dataset.
+```php
+// BS → AD (returns an EnDate, an immutable \DateTime subclass)
+$ad = $date->toAd();
+echo $ad->format('Y-m-d');
 
-#### Custom DataSet with your own rows
+// AD → BS
+$nepali = NepaliDate::fromADDate('2024/08/08');
+echo $nepali->format('Y/m/d');
+```
+
+## Date Components
+
+All component accessors return language-aware formatted values:
+
+```php
+$date = NepaliDate::make('2081/04/25');
+
+$date->year();          // "2081"
+$date->month('m');      // "04"
+$date->month('F');      // "Shrawan"
+$date->day();           // "25"
+$date->weekDay('w');    // "6"
+$date->weekDay('D');    // "Sukra"
+$date->weekDay('l');    // "Sukrabar"
+```
+
+Raw integer values are available via getters (useful for calculations):
+
+```php
+$date->getYear();       // 2081
+$date->getMonth();      // 4
+$date->getDay();        // 25
+$date->getWeekDay();    // 6
+$date->getDate();       // "2081/04/25"
+```
+
+## Manipulation
+
+All manipulation methods return **new instances** — the original is unchanged.
+
+```php
+$date = NepaliDate::make('2081/04/24');
+
+$future = $date->addDays(4);   // 2081/04/28
+$past   = $date->subDays(4);   // 2081/04/20
+
+// In-place mutation (only on NepaliDate)
+$date->setUp('2082/01/01');
+```
+
+## Comparison
+
+```php
+$a = NepaliDate::make('2081/04/24');
+$b = NepaliDate::make('2081/04/25');
+
+$a->isEqual($b);        // false
+$a->isGreaterThan($b);  // false
+$a->isLessThan($b);     // true
+
+$a->diffDays($b);       // 1
+```
+
+## Formatting
+
+| Character | Description | Example |
+|-----------|-------------|---------|
+| `Y` | Year (4-digit) | `2081` |
+| `m` | Month (numeric, zero-padded) | `04` |
+| `M` | Month (short name) | *(empty for English)* |
+| `F` | Month (full name) | `Shrawan` |
+| `d` | Day (zero-padded) | `25` |
+| `w` | Weekday (numeric, 1=Sun–7=Sat) | `6` |
+| `D` | Weekday (short name) | `Sukra` |
+| `l` | Weekday (full name) | `Sukrabar` |
+| `g` | Half-moon indicator | `Gate` / `गते` |
+
+```php
+$date->format('Y/m/d');                  // 2081/04/25
+$date->format('Y F d g l');              // 2081 Shrawan 25 Gate Sukrabar
+$date->format('Y-m-d', 'np');            // २०८१-०४-२५ (temporary language override)
+$date->setLang('np')->format('Y F d g l'); // २०८१ साउन २५ गते शुक्रबार
+```
+
+## Calendar DataSet
+
+By default the package uses the packaged Nepali calendar (BS 2000–2090). Pass a custom `DataSet` to work with a different calendar.
+
+### Custom DataSet
 
 Each year row is 12 month day-counts (29–32). Base dates anchor AD ↔ BS conversion.
 
@@ -61,18 +145,15 @@ $dataSet = DataSet::make(
         2000 => [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
         2001 => [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
     ],
-    '1944/01/01', // base English (AD) date that matches the BS base date below
-    '2000/09/17', // equivalent Nepali (BS) date
+    '1944/01/01', // base AD date
+    '2000/09/17', // equivalent BS date
 );
 
 $date = NepaliDate::make('2000/09/17', $dataSet);
-$date->toAd()->format('Y-m-d'); // 1944-01-01
-
-$date = NepaliDate::fromADDate('1944/01/01', $dataSet);
-$date->format('Y/m/d'); // 2000/09/17
+echo $date->toAd()->format('Y-m-d'); // 1944-01-01
 ```
 
-You can also build a dataset incrementally:
+### Building incrementally
 
 ```php
 $dataSet = DataSet::make()
@@ -80,19 +161,9 @@ $dataSet = DataSet::make()
     ->append(2001, [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30]);
 ```
 
-Data sets are iterable and serializable:
+### Extending DataSet
 
-```php
-foreach ($dataSet as $year => $monthDays) {
-    // ...
-}
-
-$restored = unserialize(serialize($dataSet));
-```
-
-#### Extending DataSet
-
-Ship a reusable custom calendar by extending `DataSet`. Override the constructor to provide your own rows and base dates.
+Ship a reusable custom calendar by extending `DataSet`:
 
 ```php
 use Dipesh\NepaliDate\DataSet;
@@ -109,197 +180,151 @@ class TinyDataSet extends DataSet
     }
 }
 
-$dataSet = new TinyDataSet; // or TinyDataSet::make()
+$dataSet = TinyDataSet::make(); // late-static-bound
 $date = NepaliDate::make('2000/02/01', $dataSet);
 ```
 
-`make()` is late-static-bound, so `TinyDataSet::make()` returns a `TinyDataSet`.
-
-### Date Component Retrieval Based on the Language Configuration
-```php
-$date->year();   // Retrieves the year
-$date->month($format);  // Retrieves the formatted month
-$date->day();    // Retrieves the day
-$date->weekDay($format); // Retrieves the formatted week day
-```
-### Date Manipulation and Comparison Methods
+DataSets are iterable and serializable:
 
 ```php
-$date->addDays($days);
-
-$date->subDays($days);
-
-$date->isEqual('2048/10/5'); // return true or false
-
-$date->isGreaterThan('2048/10/5');
-
-$date->isLessThan('2048/10/5');
+foreach ($dataSet as $year => $monthDays) { /* ... */ }
+$restored = unserialize(serialize($dataSet));
 ```
 
-### Formatting
+---
 
-Supported format characters: Y, m, M, F, d, w, D, l, g
+## Architecture
 
-| Format Character | Description                                    | Example Output                            |
-|------------------|------------------------------------------------|-------------------------------------------|
-| `Y`              | Year (4-digit format)                          | `2078`                                    |
-| `m`              | Month (Numeric, zero-padded, 01-12)            | `01` for Baisakh, `12` for Chait          |
-| `M`              | Month (Short textual representation)           | `Bai` for Baisakh, `Dec` for Chai         |
-| `F`              | Month (Full textual representation)            | `Baisakh`, `Jeth`                         |
-| `d`              | Day of the month (Numeric, zero-padded, 01-31) | `01` for the 1st, `31` for the 31st       |
-| `w`              | Day of the week (Numeric, 1-7)                 | `1` for Aaitabar, `7` for Sanibar         |
-| `D`              | Day of the week (Short textual representation) | `Aaita` for Aaitabar, `Budh` for Budhabar |
-| `l`              | Day of the week (Full textual representation)  | `Aaitabar`, `Sombar`                      |
-| `g`              | This is not for english(AD) format             | `Gate` or `गते`                           |
+```
+┌─────────────────────────────────────────────────────────────┐
+│  NepaliDate (public API — mutable via setUp)                 │
+│  ├── HasDateComparison, HasDateConversion                    │
+│  ├── HasDateManipulation, HasDateOperation                   │
+│  ├── DataSet + DateProcessor                                 │
+│  └── extends Date (immutable value object)                   │
+├─────────────────────────────────────────────────────────────┤
+│  Contracts                                                   │
+│  ├── Date          (withDate, getters, format, parse)        │
+│  ├── Formatter     (format, formatNumber, formatMonth, …)    │
+│  ├── Language      (digits, weeks, months, gate)              │
+│  └── DateProcessor (getDays, getDateFromDays, getWeekDay)    │
+├─────────────────────────────────────────────────────────────┤
+│  Services                                                    │
+│  ├── Date           — pure value object (no calendar math)   │
+│  ├── Formatter      — abstract base (Date on construct)      │
+│  ├── FormatDate     — default BS formatter                   │
+│  └── DateProcessor  — day math over a DataSet                │
+├─────────────────────────────────────────────────────────────┤
+│  lang                                                        │
+│  ├── English       — Romanized language pack (constants)     │
+│  └── Nepali        — Devanagari language pack (constants)    │
+├─────────────────────────────────────────────────────────────┤
+│  DataSet / SystemDataSet    — calendar data (fluent builder) │
+│  EnDate                     — immutable AD date helper       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Design patterns
+
+| Component | Pattern |
+|-----------|---------|
+| `Services\Date` | Value Object (immutable, `withDate()` factory) |
+| `Services\Formatter` | Template Method (abstract base) |
+| `Services\FormatDate`, `lang\*`, `Contracts\Language` | Strategy |
+| `Services\DateProcessor` | Strategy |
+| `DataSet` | Builder (fluent mutators) |
+| `EnDate` | Value Object (immutable arithmetic) |
+| `NepaliDate` | Facade (public API) |
+
+### Extending and Customizing
+
+Override `getFormatter()`, `getDateProcessor()`, or `resolveLanguage()` on a `NepaliDate` subclass:
 
 ```php
+class CustomDate extends \Dipesh\NepaliDate\NepaliDate
+{
+    public function getFormatter(): \Dipesh\NepaliDate\Contracts\Formatter
+    {
+        return new CustomFormatter($this);
+    }
 
-$date->format('Y-m-d'); // 2050-10-8
-
-$date->format('Y F d g l'); // 2050 Magh 8 Gate Sukrabar
-
-$date->format("Y-m-d, M d g l") // २०५०-१०-२८, माघ २८ गते बिहिबार"
-
-//or
-$date->format("Y-m-d, M d g l", 'np')
+    public function getDateProcessor(): \Dipesh\NepaliDate\Contracts\DateProcessor
+    {
+        return new CustomDateProcessor($this->dataSet);
+    }
+}
 ```
+
+#### Custom Formatter
+
+Extend `Services\Formatter` (receives `Date` on construct):
+
+```php
+use Dipesh\NepaliDate\Services\Formatter;
+
+class CustomFormatter extends Formatter
+{
+    public function format(string $format): string { /* ... */ }
+    public function formatMonth(string $format = 'm'): mixed { /* ... */ }
+    public function formatWeekDay(string $format = 'w'): mixed { /* ... */ }
+}
+```
+
+#### Custom DateProcessor
+
+```php
+use Dipesh\NepaliDate\Contracts\DateProcessor;
+
+class CustomDateProcessor implements DateProcessor
+{
+    public function getDays(int $year, int $month, int $day): int { /* ... */ }
+    public function getDateFromDays(int $totalDays): string { /* ... */ }
+    public function getWeekDayFromDays(int $days): int { /* ... */ }
+}
+```
+
+#### Custom Language
+
+```php
+use Dipesh\NepaliDate\Contracts\Language;
+
+class CustomLanguage implements Language
+{
+    public function getGate(): string { return ''; }
+    public function getDigit(int $digit): int|string { return $digit; }
+    public function getWeek(int $week): array { return ['l' => 'Sunday', 'D' => 'Sun']; }
+    public function getMonth(int $month): array { return ['F' => 'January', 'M' => 'Jan']; }
+}
+```
+
+---
+
+## Testing
+
+Tests use [Pest](https://pestphp.com). Run the full suite:
+
+```bash
+composer test
+# or
+vendor/bin/pest tests --colors
+```
+
+Run code style checks with [Pint](https://laravel.com/docs/pint):
+
+```bash
+composer lint
+```
+
+---
 
 ## Recommended Package for Full [Calendar](https://github.com/pokhreldipesh/calendar) System
 
-For developers looking to create a comprehensive [Calendar](https://github.com/pokhreldipesh/calendar) system, we recommend the **dipesh/calendar** package. This package provides an easy-to-use interface for managing a full Nepali calendar, allowing you to seamlessly add events, navigate through months and years, and much more.
-
-To install the package, run:
+For a complete calendar system with events, navigation, and more, see **[dipesh/calendar](https://github.com/pokhreldipesh/calendar)**:
 
 ```bash
 composer require dipesh/calendar
 ```
 
----
-## Extending and Customizing the Nepali Date Package
-
-This package is designed for great extensibility, allowing you to customize key components to fit your specific needs. The package is built around three main concepts:
-
-1. **DateProcessor**: Handles all date-related calculations and logic.
-2. **Language**: Manages language-specific aspects, such as number formatting and month names.
-3. **Formatter**: Controls how dates are formatted and displayed.
-
-You can extend or replace these components with your own implementations, enabling you to modify the core logic without touching the existing codebase. Below are examples of how to achieve this customization:
-
-### Example: Extending the Nepali Date Class
-
-```php
-// Extending the main NepaliDate class
-class CustomDate extends \Dipesh\NepaliDate\NepaliDate
-{
-    // Your new feature implementation goes here
-
-    // Use a custom date processor for all date-related logic
-    public function getDateProcessor()
-    {
-        return new CustomDateProcessor();
-    }
-
-    // Use a custom formatter for all date formatting
-    public function getFormatter()
-    {
-        return new CustomFormatter();
-    }
-}
-```
-
-### Example: Creating a Custom DateProcessor
-
-```php
-// Implementing a custom DateProcessor
-class CustomDateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
-{
-    public function getDays(int $year, int $month, int $day): int
-    {
-        // Your custom logic for calculating days
-    }
-
-    public function getDaysFromBase(int $year, int $month, int $day): int
-    {
-        // Days from your dataset's equivalent Nepali base date (0 on that date)
-    }
-
-    public function getDateFromDays(int $totalDays): string
-    {
-        // Your custom logic for calculating a date from total days
-    }
-
-    public function getWeekDayFromDays(int $days): int
-    {
-        // Your custom logic for determining the weekday from days
-    }
-}
-```
-
-### Example: Creating a Custom Formatter
-
-```php
-// Implementing a custom Formatter
-class CustomFormatter implements \Dipesh\NepaliDate\Contracts\Formatter
-{
-    public function setUp(Date $date): static
-    {
-        // Setup logic with the date
-    }
-
-    public function format(string $format): string
-    {
-        // Your custom logic for formatting the date
-    }
-
-    public function formatNumber(int $number): string
-    {
-        // Your custom logic for formatting numbers
-    }
-
-    public function formatMonth(string $format = 'm'): mixed
-    {
-        // Your custom logic for formatting months
-    }
-
-    public function formatWeekDay(string $format = 'w'): mixed
-    {
-        // Your custom logic for formatting weekdays
-    }
-}
-```
-
-### Example: Creating a Custom Language
-
-```php
-// Implementing a custom language
-class CustomLanguage implements \Dipesh\NepaliDate\Contracts\Language
-{
-    public function getGate(): string
-    {
-        // Your custom language specific gate especially useful for nepali language and you might not need this
-        // Eg: return "";
-    }
-
-    public function getDigit(int $digit):int|string
-    {
-        // Your custom language specific digit
-        // Eg: return 1;
-    }
-
-    public function getWeek(int $week):array
-    {
-        // Your custom language specific week day
-        // Eg: return ['l' => 'Sunday', 'D' => 'Sun'];
-    }
-
-    public function getMonth(int $month):array
-    {
-        // Your custom language specific month
-        // Eg: return ['F' => 'January', 'M' => 'Jan'];
-    }
-}
-```
----
 ## License
 
-Nepali Date is open-sourced package licensed under the [MIT license](https://opensource.org/licenses/MIT)
+Nepali Date is open source under the [MIT license](https://opensource.org/licenses/MIT).
