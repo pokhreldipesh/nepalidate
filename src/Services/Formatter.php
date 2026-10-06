@@ -27,7 +27,7 @@ abstract class Formatter implements \Dipesh\NepaliDate\Contracts\Formatter
      */
     public function formatNumber(int|string $number): string
     {
-        return (string) preg_replace_callback('/\d/m', fn ($matches) => (string) $this->language()->getDigit((int) $matches[0]), (string) $number);
+        return (string) preg_replace_callback('/\d/m', fn ($matches): string => (string) $this->language()->getDigit((int) $matches[0]), (string) $number);
     }
 
     /**

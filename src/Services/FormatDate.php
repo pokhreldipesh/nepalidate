@@ -15,12 +15,12 @@ class FormatDate extends Formatter
     /**
      * @var string[] Format characters that render a weekday.
      */
-    private const WEEKDAY_FORMATS = ['w', 'D', 'l'];
+    private const array WEEKDAY_FORMATS = ['w', 'D', 'l'];
 
     /**
      * @var string[] Format characters that render a month.
      */
-    private const MONTH_FORMATS = ['m', 'M', 'F'];
+    private const array MONTH_FORMATS = ['m', 'M', 'F'];
 
     /**
      * Format the date according to the provided format string.
@@ -33,7 +33,7 @@ class FormatDate extends Formatter
     {
         $this->validateSupportedFormats($format);
 
-        return (string) preg_replace_callback('/\w*/m', function ($matches): string {
+        return (string) preg_replace_callback('/\w*/m', function (array $matches): string {
             $char = $matches[0];
 
             return ($char && in_array($char, $this->supportedFormats))

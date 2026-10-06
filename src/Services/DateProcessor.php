@@ -19,16 +19,16 @@ class DateProcessor implements DateProcessorContract
     /**
      * Base weekday of the calendar epoch (1 = Sunday … 7 = Saturday).
      */
-    private const BASE_WEEK_DAY = 7;
+    private const int BASE_WEEK_DAY = 7;
 
     /**
      * sprintf pattern for normalizing date strings.
      */
-    private const DATE_FORMAT = '%04d/%02d/%02d';
+    private const string DATE_FORMAT = '%04d/%02d/%02d';
 
     private ?DataSet $defaultDataSet = null;
 
-    public function __construct(private ?DataSet $dataSet = null) {}
+    public function __construct(private readonly ?DataSet $dataSet = null) {}
 
     public function getDataSet(): ?DataSet
     {
@@ -147,7 +147,7 @@ class DateProcessor implements DateProcessorContract
      */
     private function parseYmd(string $date): array
     {
-        [$year, $month, $day] = array_map('intval', explode('/', $date));
+        [$year, $month, $day] = array_map(intval(...), explode('/', $date));
 
         return [$year, $month, $day];
     }

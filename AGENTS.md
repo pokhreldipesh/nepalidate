@@ -8,7 +8,7 @@ Guidance for AI agents working in this repository. Read this before changing cod
 
 ## What this package is
 
-`dipesh/nepali-date` — Nepali (BS) calendar dates for PHP (>= 8.0): formatting, comparison, manipulation, and AD (Gregorian) ↔ BS conversion. No framework lock-in. Composer autoload: `Dipesh\NepaliDate\` → `src/`, tests → `Tests\` → `tests/`.
+`dipesh/nepali-date` — Nepali (BS) calendar dates for PHP (>= 8.4): formatting, comparison, manipulation, and AD (Gregorian) ↔ BS conversion. No framework lock-in. Composer autoload: `Dipesh\NepaliDate\` → `src/`, tests → `Tests\` → `tests/`.
 
 ## Architecture (current)
 

@@ -2,6 +2,16 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
+## [Unreleased] — PHP 8.4+
+
+### Changed
+
+- **PHP requirement raised to `>=8.4`** (was `>=8.0`).
+- **Asymmetric visibility** (`public private(set)` / `public protected(set)`) on `Date` and `NepaliDate` properties — read publicly, write restricted to class hierarchy.
+- **`new` without parentheses** where applicable (PHP 8.4 syntax).
+- **Rector config** updated to `php84: true`.
+- `DateProcessor`, `Formatter` use constructor property promotion.
+
 ## [Unreleased] — Rector + PHPStan
 
 ### Added

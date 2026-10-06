@@ -23,7 +23,7 @@ trait HasDateConversion
     {
         $baseEnglishDate = $this->dataSet?->getBaseEnglishDate() ?? SystemDataSet::DEFAULT_BASE_ENGLISH_DATE;
 
-        return (new EnDate($baseEnglishDate))->addDays(
+        return new EnDate($baseEnglishDate)->addDays(
             $this->getTotalDaysFromBaseDate($this->date)
         );
     }
@@ -49,7 +49,7 @@ trait HasDateConversion
         $instance = new static($equivalentNepaliDate, null, $dataSet);
 
         return $instance->addDays(
-            (new EnDate($baseEnglishDate))->diffDays(new EnDate($date))
+            new EnDate($baseEnglishDate)->diffDays(new EnDate($date))
         );
     }
 }

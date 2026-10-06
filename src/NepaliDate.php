@@ -29,9 +29,9 @@ class NepaliDate extends Date implements Stringable
     use HasDateComparison, HasDateConversion, HasDateManipulation, HasDateOperation;
 
     /**
-     * @var DateProcessorContract Day-math engine over the calendar dataset.
+     * Day-math engine over the calendar dataset.
      */
-    public DateProcessorContract $dateProcessor;
+    public private(set) DateProcessorContract $dateProcessor;
 
     /**
      * @param  string|null  $date  Date string in Nepali format. Defaults to current date.

@@ -26,7 +26,7 @@ describe('Construction & parsing', function (): void {
     });
 
     it('accepts alternate separators', function (string $input): void {
-        expect((new Date($input, new English))->getDate())->toBe('2078/01/01');
+        expect(new Date($input, new English)->getDate())->toBe('2078/01/01');
     })->with(['2078/01/01', '2078-01-01', '2078.1.1']);
 
     it('rejects invalid dates', function (string $input): void {
@@ -87,15 +87,15 @@ describe('Language-aware accessors', function (): void {
     });
 
     it('formats month as zero-padded number', function (): void {
-        expect((new Date('2078/04/01', new English))->month('m'))->toBe('04');
+        expect(new Date('2078/04/01', new English)->month('m'))->toBe('04');
     });
 
     it('formats month as full name', function (): void {
-        expect((new Date('2078/04/01', new English))->month('F'))->toBe('Shrawan');
+        expect(new Date('2078/04/01', new English)->month('F'))->toBe('Shrawan');
     });
 
     it('throws on unsupported month format', function (): void {
-        (new Date('2078/01/01', new English))->month('x');
+        new Date('2078/01/01', new English)->month('x');
     })->throws(Exception::class);
 
     it('resolves language from string codes', function (string $code, string $expected): void {
@@ -115,17 +115,17 @@ describe('Language-aware accessors', function (): void {
     });
 
     it('throws for unsupported language', function (): void {
-        (new Date('2078/01/01', new English))->resolveLanguage('xx');
+        new Date('2078/01/01', new English)->resolveLanguage('xx');
     })->throws(Exception::class, 'The specified language type is not supported.');
 });
 
 describe('Formatting', function (): void {
     it('formats with default Y/m/d', function (): void {
-        expect((new Date('2078/01/01', new English))->format())->toBe('2078/01/01');
+        expect(new Date('2078/01/01', new English)->format())->toBe('2078/01/01');
     });
 
     it('keeps literal separators', function (): void {
-        expect((new Date('2078/01/01', new English))->format('Y-m-d'))->toBe('2078-01-01');
+        expect(new Date('2078/01/01', new English)->format('Y-m-d'))->toBe('2078-01-01');
     });
 
     it('formats with language override', function (): void {
@@ -142,7 +142,7 @@ describe('Formatting', function (): void {
     });
 
     it('throws on unsupported format character', function (): void {
-        (new Date('2078/01/01', new English))->format('Y/m/d/x');
+        new Date('2078/01/01', new English)->format('Y/m/d/x');
     })->throws(Exception::class, 'Invalid date format');
 });
 

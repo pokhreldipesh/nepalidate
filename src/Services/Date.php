@@ -14,49 +14,48 @@ use Exception;
  * Parses and holds a BS (Bikram Sambat) date string and its components.
  * Delegates formatting to a Formatter. Contains no calendar arithmetic,
  * no DataSet, and no DateProcessor — those live on NepaliDate.
- */
-/**
+ *
  * @phpstan-consistent-constructor
  */
 class Date implements \Dipesh\NepaliDate\Contracts\Date
 {
     /**
-     * @var string Normalized date string (e.g. "2078/01/01").
+     * Normalized date string (e.g. "2078/01/01").
      */
-    public string $date;
+    public private(set) string $date;
 
     /**
-     * @var int Year component.
+     * Year component.
      */
-    public int $year;
+    public private(set) int $year;
 
     /**
-     * @var int Month component (1-12).
+     * Month component (1-12).
      */
-    public int $month;
+    public private(set) int $month;
 
     /**
-     * @var int Day component.
+     * Day component.
      */
-    public int $day;
+    public private(set) int $day;
 
     /**
-     * @var int Day of the week (1 = Sunday … 7 = Saturday).
+     * Day of the week (1 = Sunday … 7 = Saturday).
      */
-    public int $weekDay = 0;
+    public protected(set) int $weekDay = 0;
 
     /**
-     * @var Language Language used for formatting.
+     * Language used for formatting.
      */
-    public Language $language;
+    public protected(set) Language $language;
 
     /**
-     * @var Formatter Formatter instance.
+     * Formatter instance.
      */
-    public Formatter $formatter;
+    public protected(set) Formatter $formatter;
 
     /**
-     * @var string sprintf pattern used to normalize the date string.
+     * sprintf pattern used to normalize the date string.
      */
     public static string $defaultOutputFormat = '%04d/%02d/%02d';
 
@@ -133,7 +132,7 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
             throw new Exception("Invalid date format. Please use 'YYYY/MM/DD'.");
         }
 
-        [$year, $month, $day] = array_map('intval', [$matches[1], $matches[2], $matches[3]]);
+        [$year, $month, $day] = array_map(intval(...), [$matches[1], $matches[2], $matches[3]]);
 
         if ($year < 1 || $month < 1 || $month > 12 || $day < 1) {
             throw new Exception("Invalid date format. Please use 'YYYY/MM/DD'.");
