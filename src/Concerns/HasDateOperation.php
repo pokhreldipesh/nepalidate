@@ -22,7 +22,7 @@ trait HasDateOperation
     public function getTotalDaysFromBaseDate(Date|string $date): int
     {
         [$year, $month, $day] = $date instanceof Date
-            ? [$date->year, $date->month, $date->day]
+            ? [$date->getYear(), $date->getMonth(), $date->getDay()]
             : ServicesDate::parseComponents($date);
 
         [$baseYear, $baseMonth, $baseDay] = ServicesDate::parseComponents(

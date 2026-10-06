@@ -6,6 +6,12 @@ All notable changes on this branch (`v3.0`) are documented here.
 
 ### Changed
 
+- **`src/Contracts/Date.php`** — expanded to match `Services\Date` surface:
+  - Added: `getDate()`, `getYear()`, `getMonth()`, `getDay()`, `getWeekDay()`, `getLanguage()`, `format()`, `getFormatter()`, `resolveLanguage()`, `parseComponents()`.
+- **`src/Services/Date.php`** — added getter methods (`getDate`, `getYear`, `getMonth`, `getDay`, `getWeekDay`, `getLanguage`) for typed interface access to raw components.
+- **`src/Services/FormatDate.php`** — uses `Date` interface getters instead of direct property access.
+- **`src/Concerns/HasDateOperation.php`** — uses `Date` interface getters instead of direct property access.
+
 - **`src/Services/Date.php`** — rewritten as a pure system-level value object:
   - Removed: `$dataSet`, `$dateProcessor`, `getDateProcessor()`, `HasDateOperation` trait, `__get('weekDay')`.
   - Added: `public int $weekDay` (real property), `Date::parseComponents()` (public static).

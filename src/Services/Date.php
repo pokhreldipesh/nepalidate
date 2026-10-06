@@ -119,6 +119,54 @@ class Date implements \Dipesh\NepaliDate\Contracts\Date
     }
 
     /**
+     * Get the normalized date string.
+     */
+    public function getDate(): string
+    {
+        return $this->date;
+    }
+
+    /**
+     * Get the year as a raw integer.
+     */
+    public function getYear(): int
+    {
+        return $this->year;
+    }
+
+    /**
+     * Get the month as a raw integer (1–12).
+     */
+    public function getMonth(): int
+    {
+        return $this->month;
+    }
+
+    /**
+     * Get the day as a raw integer.
+     */
+    public function getDay(): int
+    {
+        return $this->day;
+    }
+
+    /**
+     * Get the day of the week (1 = Sunday … 7 = Saturday).
+     */
+    public function getWeekDay(): int
+    {
+        return $this->weekDay;
+    }
+
+    /**
+     * Get the current formatting language.
+     */
+    public function getLanguage(): Language
+    {
+        return $this->language;
+    }
+
+    /**
      * Get the day component, formatted for the current language.
      */
     public function day(): int|string

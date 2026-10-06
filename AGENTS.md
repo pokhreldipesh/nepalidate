@@ -123,7 +123,8 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
 ### Contracts
 
 - `Contracts\DateProcessor`: `getDays`, `getDateFromDays`, `getWeekDayFromDays`
-- `Contracts\Formatter`, `Contracts\Language`, `Contracts\Date` — implement when replacing components (see README examples)
+- `Contracts\Date`: `setUp`, `getDate`, `getYear`, `getMonth`, `getDay`, `getWeekDay`, `getLanguage`, `year`, `month`, `day`, `format`, `getFormatter`, `resolveLanguage`, `parseComponents`
+- `Contracts\Formatter`, `Contracts\Language` — implement when replacing components (see README examples)
 
 ## Rules
 
@@ -151,4 +152,5 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
   - `Contracts\DateProcessor`: removed `getDaysFromBase` (kept as `@internal` on concrete `Services\DateProcessor`).
   - `HasDateOperation::getTotalDaysFromBaseDate()` now uses `getDays()` arithmetic instead of `getDaysFromBase()`.
   - `Contracts\Date::month()` signature aligned to `month(string $format = 'm')`.
+  - `Contracts\Date` expanded: added `getDate()`, `getYear()`, `getMonth()`, `getDay()`, `getWeekDay()`, `getLanguage()`, `format()`, `getFormatter()`, `resolveLanguage()`, `parseComponents()`. Internal code (`FormatDate`, `HasDateOperation`) uses these getters instead of direct property access.
 - Keep this section updated when you land further changes.

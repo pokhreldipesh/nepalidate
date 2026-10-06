@@ -34,12 +34,12 @@ class FormatDate implements Formatter
      */
     public function setUp(Date $date): static
     {
-        $this->defaultLang = $date->language;
+        $this->defaultLang = $date->getLanguage();
         $this->date = [
-            'Y' => $date->year,
-            'm' => $date->month,
-            'd' => $date->day,
-            'w' => fn () => $date->weekDay,
+            'Y' => $date->getYear(),
+            'm' => $date->getMonth(),
+            'd' => $date->getDay(),
+            'w' => fn () => $date->getWeekDay(),
         ];
 
         return $this;
