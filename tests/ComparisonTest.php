@@ -40,6 +40,58 @@ describe('Date comparison', function (): void {
     });
 });
 
+describe('Anniversary', function (): void {
+    it('is an anniversary for the same month and day in a different year', function (): void {
+        expect(NepaliDate::make('2082/04/25')->isAnniversary('2081/04/25'))->toBeTrue();
+    });
+
+    it('is an anniversary for the same date', function (): void {
+        expect(NepaliDate::make('2081/04/25')->isAnniversary('2081/04/25'))->toBeTrue();
+    });
+
+    it('is not an anniversary when the month differs', function (): void {
+        expect(NepaliDate::make('2082/05/25')->isAnniversary('2081/04/25'))->toBeFalse();
+    });
+
+    it('is not an anniversary when the day differs', function (): void {
+        expect(NepaliDate::make('2082/04/26')->isAnniversary('2081/04/25'))->toBeFalse();
+    });
+
+    it('accepts a Date object as the reference date', function (): void {
+        expect(NepaliDate::make('2082/04/25')->isAnniversary(NepaliDate::make('2081/04/25')))->toBeTrue();
+    });
+
+    it('accepts flexible separators in the reference date string', function (): void {
+        expect(NepaliDate::make('2082/04/25')->isAnniversary('2081-04-25'))->toBeTrue();
+    });
+
+    it('defaults to today when no reference date is given', function (): void {
+        expect(NepaliDate::now()->isAnniversary())->toBeTrue();
+    });
+
+    it('treats an explicit null the same as omitting the reference date', function (): void {
+        expect(NepaliDate::now()->isAnniversary(null))->toBeTrue();
+    });
+
+    it('is not an anniversary of today for a different day', function (): void {
+        expect(NepaliDate::now()->addDays(1)->isAnniversary())->toBeFalse();
+    });
+});
+
+describe('Birthday', function (): void {
+    it('mirrors isAnniversary for a matching month and day', function (): void {
+        expect(NepaliDate::make('2082/04/25')->isBirthday('2081/04/25'))->toBeTrue();
+    });
+
+    it('mirrors isAnniversary for a non-matching date', function (): void {
+        expect(NepaliDate::make('2082/04/25')->isBirthday('2081/05/25'))->toBeFalse();
+    });
+
+    it('defaults to today when no reference date is given', function (): void {
+        expect(NepaliDate::now()->isBirthday())->toBeTrue();
+    });
+});
+
 describe('Day difference', function (): void {
     it('computes positive difference', function (): void {
         expect(NepaliDate::make('2081/04/24')->diffDays('2081/04/28'))->toBe(4);

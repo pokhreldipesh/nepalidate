@@ -105,6 +105,8 @@ $date->subDays(int $day): static
 $date->isEqual(Date|string $date): bool
 $date->isGreaterThan(Date|string $date): bool
 $date->isLessThan(Date|string $date): bool
+$date->isAnniversary(Date|string|null $date = null): bool  // $date defaults to NepaliDate::now()
+$date->isBirthday(Date|string|null $date = null): bool     // alias for isAnniversary()
 
 // HasDateOperation
 $date->weekDay(string $format = 'w'): int|string
@@ -165,4 +167,6 @@ SystemDataSet::DEFAULT_EQUIVALENT_NEPALI_DATE // '2000/09/17'
   - `NepaliDate` adds `setUp()` as public mutator and overrides `withDate()` to preserve DataSet and recompute weekDay. `create()` and `addDays()` use `withDate()` instead of `clone + setUp`.
   - Formatter system refactored: `setUp()` removed from `Contracts\Formatter`. `Services\Formatter` (abstract) takes `Date` on construct. `FormatDate` extends it. `Date::__clone` recreates formatter. `format()` no longer re-binds formatter.
   - Full maintainability refactor: language packs use class constants (was `public static`), `EnDate` arithmetic returns new instances (was mutating), `DateProcessor` no longer depends on `Date` class (has own `DATE_FORMAT` constant), `Date::format()` language override is temporary (doesn't persist). `FormatDate` uses named `const` arrays for format groups.
+- **`isAnniversary`** — new `HasDateComparison` predicate: true when month + day match, regardless of year (a date is its own anniversary). Optional `$date` argument defaults to `NepaliDate::now()` (today) when omitted. Added to README Comparison section and `tests/ComparisonTest.php`.
+- **`isBirthday`** — convenience alias for `isAnniversary()` (same signature/behaviour). Documented in README and tested in `tests/ComparisonTest.php`.
 - Keep this section updated when you land further changes.

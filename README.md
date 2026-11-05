@@ -107,6 +107,29 @@ $a->isLessThan($b);     // true
 $a->diffDays($b);       // 1
 ```
 
+### Anniversary
+
+`isAnniversary()` reports whether a date marks the anniversary of another — i.e. same month and day, regardless of year. A date is therefore its own anniversary. Omit the argument to compare against today's date (`NepaliDate::now()`).
+
+```php
+$today = NepaliDate::make('2082/04/25');
+$today->isAnniversary('2081/04/25');  // true  (same month + day)
+$today->isAnniversary('2081/05/25');  // false (different month)
+$today->isAnniversary('2081/04/26');  // false (different day)
+
+// No argument → compare against today (NepaliDate::now())
+NepaliDate::now()->isAnniversary();               // true  (today is its own anniversary)
+NepaliDate::make('2081/04/25')->isAnniversary();  // true only when today is month 04, day 25
+```
+
+`isBirthday()` is an alias for `isAnniversary()` — a birthday is just the anniversary of a birth date. It accepts the same optional argument.
+
+```php
+$baby = NepaliDate::make('2081/04/25');
+$baby->isBirthday('2082/04/25');  // true
+$baby->isBirthday();              // true only when today is month 04, day 25
+```
+
 ## Formatting
 
 | Character | Description | Example |

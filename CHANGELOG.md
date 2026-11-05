@@ -2,6 +2,13 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
+## [Unreleased] — `isAnniversary` API
+
+### Added
+
+- **`NepaliDate::isAnniversary(Date|string|null $date = null): bool`** (in `HasDateComparison`) — returns true when the given date shares the same month and day as the current date, regardless of year (a date is its own anniversary). Accepts a `Date` object or a date string; when omitted (or `null`) the reference date defaults to today via `NepaliDate::now()` in the current calendar. Components are compared directly (no calendar arithmetic), so BS month lengths do not matter. Documented in `README.md`; covered in `tests/ComparisonTest.php`.
+- **`NepaliDate::isBirthday(Date|string|null $date = null): bool`** (in `HasDateComparison`) — convenience alias for `isAnniversary()`; same signature and behaviour. Documented in `README.md`; covered in `tests/ComparisonTest.php`.
+
 ## [Unreleased] — PHP 8.4+
 
 ### Changed
