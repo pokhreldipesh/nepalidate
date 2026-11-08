@@ -4,3 +4,19 @@ composer.lock
 .phpunit.result.cache
 .mimocode
 AGENTS.md
+
+# Generated reports
+/coverage/
+/build/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
