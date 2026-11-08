@@ -4,6 +4,11 @@ All notable changes on this branch (`v3.0`) are documented here.
 
 ## [3.0.1] — Packaged calendar data correction (BS 2081–2083)
 
+### Added
+
+- **`composer.json`** — explicit `"version": "3.0.1"` field. Note this must be bumped by hand on every release, since Composer would otherwise infer it from the git tag.
+- **`README.md`** — dynamic Packagist version badge (`img.shields.io/packagist/v/dipesh/nepali-date`), which tracks the latest published version automatically.
+
 ### Fixed
 
 - **`SystemDataSet::packaged()` month lengths for BS 2081, 2082 and 2083 were wrong**, so every AD ↔ BS conversion landing inside those three BS years was off by up to a day. Reported symptom: `NepaliDate::now()->format('Y-m-d')` returned `2083-07-23` for 2026-11-08, but the correct BS date is `2083-07-22`.

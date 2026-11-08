@@ -1,6 +1,8 @@
 # Nepali Date
 
-Nepali (BS) calendar dates for PHP (>= 8.0). Convert between English (AD) and Nepali (BS) calendars, format dates in English or Devanagari, compare and manipulate dates, and plug in custom calendars.
+[![Version](https://img.shields.io/packagist/v/dipesh/nepali-date)](https://packagist.org/packages/dipesh/nepali-date)
+
+Nepali (BS) calendar dates for PHP (>= 8.4). Convert between English (AD) and Nepali (BS) calendars, format dates in English or Devanagari, compare and manipulate dates, and plug in custom calendars.
 
 ## Installation
 
