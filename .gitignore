@@ -4,6 +4,7 @@ composer.lock
 .phpunit.result.cache
 .mimocode
 AGENTS.md
+architecture.md
 
 # Generated reports
 /coverage/
