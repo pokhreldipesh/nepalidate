@@ -2,6 +2,18 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
+## [3.0.1] — Packaged calendar data correction (BS 2081–2083)
+
+### Fixed
+
+- **`SystemDataSet::packaged()` month lengths for BS 2081, 2082 and 2083 were wrong**, so every AD ↔ BS conversion landing inside those three BS years was off by up to a day. Reported symptom: `NepaliDate::now()->format('Y-m-d')` returned `2083-07-23` for 2026-11-08, but the correct BS date is `2083-07-22`.
+  - BS 2081: `[31, 31, 32, 32, 31, 30, 30, 30, 29, 30, 30, 30]` → `[31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31]`
+  - BS 2082: `[30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30]` → `[31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30]`
+  - BS 2083: `[31, 31, 32, 31, 31, 30, 30, 30, 29, 30, 30, 30]` → `[31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30]`
+  - **Year totals are unchanged** (366 / 365 / 365), so no year boundary moved: `2000/09/17` ↔ `1944/01/01` and all round-trips behave exactly as before. Only the intra-year month distribution was wrong.
+  - Root cause: the 2081–2083 block was a shifted copy of stale pre-correction data (it matched `bikram-sambat` v1.7.0's 2079–2081 rows), while the rest of the table was already correct.
+- **`tests/DateConversionTest.php`** — four AD ↔ BS pairs added to pin the corrected rows, including the reported symptom `2026-11-08 → 2083/07/22` and the Ashoj-31 boundary `2026-10-17 → 2083/06/31`.
+
 ## [Unreleased] — `dipesh/date` extraction (local date layer removed)
 
 ### Added
