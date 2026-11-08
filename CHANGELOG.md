@@ -2,6 +2,15 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
+## [Unreleased] — Tooling: one docblock style across Pint and Rector
+
+### Changed
+
+- **`pint.json`** — the `fully_qualified_strict_types` disable is **removed**, so Pint's default applies and FQCNs in docblocks get shortened to imported short names. `pint.json` is now an empty `{"rules": {}}` placeholder. This supersedes the earlier decision to keep FQCNs (added with the `dipesh/date` extraction).
+- **`rector.php`** — `withImportNames(importDocBlockNames: true)` to match, so Rector shortens the same docblock types and adds the `use` imports they resolve against. The two tools now converge instead of reverting each other: Rector shortens and imports, Pint then normalizes import order.
+- **`src/NepaliDate.php`** — `@method` / `@property-read` / `@param` / `@throws` docblock tags normalized to short names, with `use Exception;` added for the `@throws` tags.
+- **`rector.php`** — `RemoveNullArgOnNullDefaultParamRector` skipped for `tests/`. Those cases deliberately pass an explicit `null` to assert it behaves the same as omitting the argument, so the rule's rewrite would collapse the call and delete the behaviour under test. `vendor/bin/rector --dry-run` reports no changes.
+
 ## [3.0.1] — Packaged calendar data correction (BS 2081–2083)
 
 ### Added
@@ -25,7 +34,7 @@ All notable changes on this branch (`v3.0`) are documented here.
 
 - **`composer.json`** — new runtime dependency **`dipesh/date: ^1.0`** from Packagist (published v1.0.0, `github.com/pokhreldipesh/date`). This is the system-level BS date value object library extracted from this package. The earlier Composer path repository (`../date`, symlinked) has been removed — `vendor/dipesh/date` is now a real install from the GitHub archive.
 - **`Date::withWeekDay(int $weekDay): static`** in `dipesh/date` — see "Design note" below.
-- **`pint.json`** — disables `fully_qualified_strict_types` so FQCNs in docblocks survive formatting.
+- **`pint.json`** — disabled `fully_qualified_strict_types` so FQCNs in docblocks would survive formatting (this disable was later removed — see "Tooling: one docblock style across Pint and Rector" above).
 
 ### Changed
 

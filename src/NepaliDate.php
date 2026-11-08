@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dipesh\NepaliDate;
 
+use Exception;
 use Dipesh\Date\Contracts\Formatter;
 use Dipesh\Date\Contracts\LanguagePack;
 use Dipesh\Date\Date;
@@ -38,21 +39,21 @@ use Stringable;
  * @property-read int $month Month component (1–12).
  * @property-read int $day Day component.
  * @property-read int $weekDay Day of the week (1 = Sunday … 7 = Saturday).
- * @property-read \Dipesh\Date\Language $language Formatting language.
- * @property-read \Dipesh\Date\Contracts\Formatter $formatter Formatter instance.
+ * @property-read Language $language Formatting language.
+ * @property-read Formatter $formatter Formatter instance.
  *
- * @method string format(string $format = 'Y/m/d', string|\Dipesh\Date\Contracts\LanguagePack|\Dipesh\Date\Language|null $lang = null) Format the date.
+ * @method string format(string $format = 'Y/m/d', string|LanguagePack|Language|null $lang = null) Format the date.
  * @method string getDate() Normalized date string (e.g. "2081/04/25").
  * @method int getYear() Year as raw integer.
  * @method int getMonth() Month as raw integer (1–12).
  * @method int getDay() Day as raw integer.
  * @method int getWeekDay() Day of the week (1 = Sunday … 7 = Saturday).
- * @method \Dipesh\Date\Language getLanguage() Current formatting language.
- * @method \Dipesh\Date\Contracts\Formatter getFormatter() Formatter bound to the composed date.
- * @method \Dipesh\Date\Language resolveLanguage(string|\Dipesh\Date\Contracts\LanguagePack|\Dipesh\Date\Language $language) Resolve a language code, pack, or bridge.
- * @method bool isEqual(\Dipesh\NepaliDate\NepaliDate|\Dipesh\Date\Date|string $date) Component-wise equality.
- * @method bool isGreaterThan(\Dipesh\NepaliDate\NepaliDate|\Dipesh\Date\Date|string $date) Component-wise ordering.
- * @method bool isLessThan(\Dipesh\NepaliDate\NepaliDate|\Dipesh\Date\Date|string $date) Component-wise ordering.
+ * @method Language getLanguage() Current formatting language.
+ * @method Formatter getFormatter() Formatter bound to the composed date.
+ * @method Language resolveLanguage(string|LanguagePack|Language $language) Resolve a language code, pack, or bridge.
+ * @method bool isEqual(NepaliDate|Date|string $date) Component-wise equality.
+ * @method bool isGreaterThan(NepaliDate|Date|string $date) Component-wise ordering.
+ * @method bool isLessThan(NepaliDate|Date|string $date) Component-wise ordering.
  * @method static array{0: int, 1: int, 2: int} parseComponents(string $date) Parse into [year, month, day].
  *
  * @phpstan-consistent-constructor
@@ -73,10 +74,10 @@ class NepaliDate implements Stringable
 
     /**
      * @param  string|null  $date  Date string in Nepali format. Defaults to current date.
-     * @param  \Dipesh\Date\Contracts\LanguagePack|\Dipesh\Date\Language|null  $language  Formatting language. Defaults to English.
+     * @param LanguagePack|Language|null $language Formatting language. Defaults to English.
      * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(?string $date = null, LanguagePack|Language|null $language = null, public ?DataSet $dataSet = null)
     {
@@ -99,7 +100,7 @@ class NepaliDate implements Stringable
      * Create a new instance with a different date, preserving language, dataset,
      * and any custom formatter.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function withDate(string $date): static
     {
@@ -112,7 +113,7 @@ class NepaliDate implements Stringable
     /**
      * Mutate this instance to a new date and refresh the weekday.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function setUp(string $date): void
     {
@@ -132,7 +133,7 @@ class NepaliDate implements Stringable
      *
      * @param  string  $format  'm' for zero-padded number, 'M' for short name, 'F' for full name.
      *
-     * @throws \Exception If the format is unsupported.
+     * @throws Exception If the format is unsupported.
      */
     public function month(string $format = 'm'): int|string
     {
@@ -152,7 +153,7 @@ class NepaliDate implements Stringable
      *
      * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function now(?DataSet $dataSet = null): static
     {
@@ -164,7 +165,7 @@ class NepaliDate implements Stringable
      *
      * @param  string  $date  Date string in Nepali format.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function create(string $date): static
     {
@@ -177,7 +178,7 @@ class NepaliDate implements Stringable
      * @param  string  $date  Date string in Nepali format.
      * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function make(string $date, ?DataSet $dataSet = null): self
     {
@@ -187,9 +188,9 @@ class NepaliDate implements Stringable
     /**
      * Set Default Formatting Language
      *
-     * @param  string|\Dipesh\Date\Contracts\LanguagePack|\Dipesh\Date\Language  $language  Language code, pack, or bridge.
+     * @param string|LanguagePack|Language $language Language code, pack, or bridge.
      *
-     * @throws \Exception If the language is not supported.
+     * @throws Exception If the language is not supported.
      */
     public function setLang(string|LanguagePack|Language $language): static
     {
@@ -207,7 +208,7 @@ class NepaliDate implements Stringable
      * Returns `static` (not the composed `Date`) so calendar operations stay
      * available further along a fluent chain.
      *
-     * @param  \Dipesh\Date\Contracts\Formatter|callable  $formatter  Formatter instance, or a callback
+     * @param Formatter|callable $formatter Formatter instance, or a callback
      *                                                                invoked as ($format, $date).
      */
     public function formatUsing(Formatter|callable $formatter): static
@@ -224,10 +225,10 @@ class NepaliDate implements Stringable
      * Returns `static` (not the composed `Date`) so calendar operations stay
      * available further along a fluent chain.
      *
-     * @param  \Dipesh\Date\Contracts\LanguagePack|\Dipesh\Date\Language|callable  $language  Pack, bridge, or a callback
+     * @param LanguagePack|Language|callable $language Pack, bridge, or a callback
      *                                                                                        returning language data.
      *
-     * @throws \Exception If the language data is malformed.
+     * @throws Exception If the language data is malformed.
      */
     public function languageUsing(LanguagePack|Language|callable $language): static
     {
@@ -248,10 +249,10 @@ class NepaliDate implements Stringable
      * that package has no clock; it resolves through {@see self::now()} in the
      * active calendar.
      *
-     * @param  \Dipesh\NepaliDate\NepaliDate|\Dipesh\Date\Date|string|null  $date  Reference date. Defaults to today.
+     * @param NepaliDate|Date|string|null $date Reference date. Defaults to today.
      * @return bool True if both dates share the same month and day.
      *
-     * @throws \Exception If the date string is invalid.
+     * @throws Exception If the date string is invalid.
      */
     public function isAnniversary(NepaliDate|Date|string|null $date = null): bool
     {
@@ -269,10 +270,10 @@ class NepaliDate implements Stringable
      * anniversary of a birth date (same month and day, regardless of year).
      * Not provided by `dipesh/date`.
      *
-     * @param  \Dipesh\NepaliDate\NepaliDate|\Dipesh\Date\Date|string|null  $date  Reference date. Defaults to today.
+     * @param NepaliDate|Date|string|null $date Reference date. Defaults to today.
      * @return bool True if both dates share the same month and day.
      *
-     * @throws \Exception If the date string is invalid.
+     * @throws Exception If the date string is invalid.
      */
     public function isBirthday(NepaliDate|Date|string|null $date = null): bool
     {
