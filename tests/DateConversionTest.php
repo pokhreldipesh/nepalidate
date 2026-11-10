@@ -10,23 +10,23 @@ class DateConversionTest extends TestCase
 {
     public $date;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->date = new NepaliDate;
     }
 
-    public function testToAd()
+    public function test_to_ad()
     {
         $this->assertSame((new \DateTime)->format('Y-m-d'), $this->date->toAd()->format('Y-m-d'));
     }
 
-    public function testFromAd()
+    public function test_from_ad()
     {
         $this->assertSame($this->date->format('Y-m-d'), $this->date::fromADDate((new \DateTime)->format('Y-m-d'))->format('Y-m-d'));
     }
 
     /** @dataProvider ADToBSDates */
-    public function testDateConversionFromADToBS(string $AD, string $BS): void
+    public function test_date_conversion_from_ad_to_bs(string $AD, string $BS): void
     {
         $this->assertEquals($BS, $this->date::fromADDate($AD)->format('Y/m/d'));
     }
@@ -39,6 +39,10 @@ class DateConversionTest extends TestCase
             ['AD' => '1994/1/21', 'BS' => '2050/10/08'],
             ['AD' => '2001/7/27', 'BS' => '2058/04/12'],
             ['AD' => '2023/1/7', 'BS' => '2079/09/23'],
+            ['AD' => '2025/04/13', 'BS' => '2081/12/31'],
+            ['AD' => '2025/05/14', 'BS' => '2082/01/31'],
+            ['AD' => '2026/10/17', 'BS' => '2083/06/31'],
+            ['AD' => '2026/11/08', 'BS' => '2083/07/22'],
         ];
     }
 }
