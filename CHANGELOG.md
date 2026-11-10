@@ -2,7 +2,7 @@
 
 All notable changes on this branch (`v3.0`) are documented here.
 
-## [Unreleased] — Tooling: one docblock style across Pint and Rector
+## [3.0.2] — Tooling: one docblock style across Pint and Rector
 
 ### Changed
 
@@ -10,6 +10,7 @@ All notable changes on this branch (`v3.0`) are documented here.
 - **`rector.php`** — `withImportNames(importDocBlockNames: true)` to match, so Rector shortens the same docblock types and adds the `use` imports they resolve against. The two tools now converge instead of reverting each other: Rector shortens and imports, Pint then normalizes import order.
 - **`src/NepaliDate.php`** — `@method` / `@property-read` / `@param` / `@throws` docblock tags normalized to short names, with `use Exception;` added for the `@throws` tags.
 - **`rector.php`** — `RemoveNullArgOnNullDefaultParamRector` skipped for `tests/`. Those cases deliberately pass an explicit `null` to assert it behaves the same as omitting the argument, so the rule's rewrite would collapse the call and delete the behaviour under test. `vendor/bin/rector --dry-run` reports no changes.
+- **CI** — the `code-quality` style gate (`pint --test`) now passes end to end; it had been failing since the v3.0 refactor on the `NepaliDate` docblock style. Style-only release: no behaviour change.
 
 ## [3.0.1] — Packaged calendar data correction (BS 2081–2083)
 
