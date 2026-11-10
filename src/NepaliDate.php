@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Dipesh\NepaliDate;
 
-use Exception;
 use Dipesh\Date\Contracts\Formatter;
 use Dipesh\Date\Contracts\LanguagePack;
 use Dipesh\Date\Date;
@@ -15,12 +14,13 @@ use Dipesh\NepaliDate\Concerns\HasDateManipulation;
 use Dipesh\NepaliDate\Concerns\HasDateOperation;
 use Dipesh\NepaliDate\Contracts\DateProcessor as DateProcessorContract;
 use Dipesh\NepaliDate\Services\DateProcessor;
+use Exception;
 use Stringable;
 
 /**
  * NepaliDate — calendar-aware BS date facade.
  *
- * Composes a system-level {@see \Dipesh\Date\Date} (from `dipesh/date`) and delegates
+ * Composes a system-level {@see Date} (from `dipesh/date`) and delegates
  * every date-level concern to it. This class only owns calendar awareness: the
  * `DataSet`, day-math, weekday resolution, and AD ↔ BS conversion.
  *
@@ -74,7 +74,7 @@ class NepaliDate implements Stringable
 
     /**
      * @param  string|null  $date  Date string in Nepali format. Defaults to current date.
-     * @param LanguagePack|Language|null $language Formatting language. Defaults to English.
+     * @param  LanguagePack|Language|null  $language  Formatting language. Defaults to English.
      * @param  DataSet|null  $dataSet  Optional custom calendar dataset.
      *
      * @throws Exception
@@ -188,7 +188,7 @@ class NepaliDate implements Stringable
     /**
      * Set Default Formatting Language
      *
-     * @param string|LanguagePack|Language $language Language code, pack, or bridge.
+     * @param  string|LanguagePack|Language  $language  Language code, pack, or bridge.
      *
      * @throws Exception If the language is not supported.
      */
@@ -208,8 +208,8 @@ class NepaliDate implements Stringable
      * Returns `static` (not the composed `Date`) so calendar operations stay
      * available further along a fluent chain.
      *
-     * @param Formatter|callable $formatter Formatter instance, or a callback
-     *                                                                invoked as ($format, $date).
+     * @param  Formatter|callable  $formatter  Formatter instance, or a callback
+     *                                         invoked as ($format, $date).
      */
     public function formatUsing(Formatter|callable $formatter): static
     {
@@ -225,8 +225,8 @@ class NepaliDate implements Stringable
      * Returns `static` (not the composed `Date`) so calendar operations stay
      * available further along a fluent chain.
      *
-     * @param LanguagePack|Language|callable $language Pack, bridge, or a callback
-     *                                                                                        returning language data.
+     * @param  LanguagePack|Language|callable  $language  Pack, bridge, or a callback
+     *                                                    returning language data.
      *
      * @throws Exception If the language data is malformed.
      */
@@ -243,13 +243,13 @@ class NepaliDate implements Stringable
      *
      * An anniversary shares the same month and day, regardless of year — a date is
      * therefore its own anniversary. Components are compared directly, so BS month
-     * lengths do not matter. Delegates to the composed {@see \Dipesh\Date\Date}.
+     * lengths do not matter. Delegates to the composed {@see Date}.
      *
      * The `null` → today default lives here rather than on `dipesh/date` because
      * that package has no clock; it resolves through {@see self::now()} in the
      * active calendar.
      *
-     * @param NepaliDate|Date|string|null $date Reference date. Defaults to today.
+     * @param  NepaliDate|Date|string|null  $date  Reference date. Defaults to today.
      * @return bool True if both dates share the same month and day.
      *
      * @throws Exception If the date string is invalid.
@@ -270,7 +270,7 @@ class NepaliDate implements Stringable
      * anniversary of a birth date (same month and day, regardless of year).
      * Not provided by `dipesh/date`.
      *
-     * @param NepaliDate|Date|string|null $date Reference date. Defaults to today.
+     * @param  NepaliDate|Date|string|null  $date  Reference date. Defaults to today.
      * @return bool True if both dates share the same month and day.
      *
      * @throws Exception If the date string is invalid.
@@ -289,7 +289,7 @@ class NepaliDate implements Stringable
     }
 
     /**
-     * Read a date property from the composed {@see \Dipesh\Date\Date}.
+     * Read a date property from the composed {@see Date}.
      */
     public function __get(string $name): mixed
     {
@@ -297,7 +297,7 @@ class NepaliDate implements Stringable
     }
 
     /**
-     * Forward a date method call to the composed {@see \Dipesh\Date\Date}.
+     * Forward a date method call to the composed {@see Date}.
      *
      * Arguments that are `NepaliDate` instances are unwrapped to their composed
      * `Date`, so comparison helpers accept either.
@@ -310,7 +310,7 @@ class NepaliDate implements Stringable
     }
 
     /**
-     * Forward a static date call (e.g. `parseComponents`) to {@see \Dipesh\Date\Date}.
+     * Forward a static date call (e.g. `parseComponents`) to {@see Date}.
      *
      * @param  array<int, mixed>  $arguments
      */
