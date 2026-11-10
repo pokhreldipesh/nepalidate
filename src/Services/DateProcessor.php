@@ -99,7 +99,7 @@ class DateProcessor implements \Dipesh\NepaliDate\Contracts\DateProcessor
     {
         $day = $days % self::$baseWeekDay;
 
-        //Calculate weekday traversing backward from base date
+        // Calculate weekday traversing backward from base date
         if ($day < 0) {
             $day = $day + 7;
         }
